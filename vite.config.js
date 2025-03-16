@@ -10,10 +10,11 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      '/api': {
+      '/version/': {
         target: 'http://127.0.0.1:8002',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        // secure: true,
+        // rewrite: (path) => path.replace(/^\/version/,'')
       }
     }
   },

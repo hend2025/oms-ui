@@ -127,7 +127,7 @@ const fetchPurchaseList = async () => {
   }
   
   try {
-    const resp = await postRequest('api/version/ht/matter/stoin/list', para)
+    const resp = await postRequest('/version/ht/matter/stoin/list', para)
     if (resp.status === 200 && resp.data.code === 0) {
       const newRecords = resp.data.data.records || []
       const total = resp.data.data.total || 0
