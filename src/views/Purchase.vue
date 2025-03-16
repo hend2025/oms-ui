@@ -1,6 +1,5 @@
 <template>
   <div class="purchase">
-    <!-- 顶部操作栏 -->
     <div class="header">
       <div class="left">
         <el-button :icon="ArrowLeft" circle @click="handleBack" />
@@ -16,12 +15,11 @@
       </div>
     </div>
 
-    <!-- 搜索区域 -->
     <div class="search-area" v-show="showSearch">
       <div class="search-item">
         <div class="date-range">
           <el-date-picker
-            v-model="startDate"
+            v-model="queryParams.startDate"
             type="date"
             placeholder="开始日期"
             format="YYYY/MM/DD"
@@ -29,7 +27,7 @@
           />
           <span class="date-separator">至</span>
           <el-date-picker
-            v-model="endDate"
+            v-model="queryParams.endDate"
             type="date"
             placeholder="结束日期"
             format="YYYY/MM/DD"
@@ -39,7 +37,7 @@
       </div>
       <div class="search-item">
         <el-input
-          v-model="matterNameKeyword"
+          v-model="queryParams.matterName"
           placeholder="物料名称"
           @keyup.enter="handleSearch"
         >
@@ -50,7 +48,7 @@
       </div>
       <div class="search-item">
         <el-input
-          v-model="companyNameKeyword"
+          v-model="queryParams.companyName"
           placeholder="供应商"
           @keyup.enter="handleSearch"
         >
@@ -64,7 +62,6 @@
       </div>
     </div>
 
-    <!-- 列表区域 -->
     <div class="list-area">
       <div v-for="item in purchaseList" 
            :key="item.stoinId" 
@@ -84,102 +81,103 @@
           </div>
         </div>
       </div>
-      <div v-if="loading" class="loading-text">加载中...</div>
-      <div v-if="!hasMore" class="no-more-text">没有更多数据了</div>
+      <div v-if="pageState.loading" class="loading-text">加载中...</div>
+      <div v-if="!pageState.hasMore" class="no-more-text">没有更多数据了</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'  
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'  
+import { ElMessage } from 'element-plus'
 import { Search, Plus, ArrowLeft } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import dayjs from 'dayjs' 
-import { postRequest, getRequest } from "../utils/api"
+import { postRequest } from "../utils/api"
+import { throttle } from 'lodash-es'
 
 const router = useRouter()
 const showSearch = ref(false)
-const pageNum = ref(1)
-const pageSize = ref(10)
-const startDate = ref(dayjs().subtract(3, 'month').format('YYYY/MM/DD'))
-const endDate = ref(dayjs().format('YYYY/MM/DD'))
-const matterNameKeyword = ref('')
-const companyNameKeyword = ref('')
 const purchaseList = ref([])
 
-const loading = ref(false)
-const hasMore = ref(true)
-const isRequesting = ref(false)  // 添加请求状态控制
+const pageState = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0,
+  hasMore: true,
+  loading: false,
+  retryCount: 0,
+  maxRetries: 3
+})
 
-const fetchPurchaseList = async () => {
-  if (loading.value || !hasMore.value || isRequesting.value) return
-  loading.value = true
-  isRequesting.value = true  // 设置请求状态
+const queryParams = reactive({
+  startDate: dayjs().subtract(3, 'month').format('YYYY/MM/DD'),
+  endDate: dayjs().format('YYYY/MM/DD'),
+  matterName: '',
+  companyName: ''
+})
 
-  let para = {
-    pageNum: pageNum.value,
-    pageSize: pageSize.value,
-    startDate: startDate.value,
-    endDate: endDate.value,
-    matterName: matterNameKeyword.value,
-    companyName: companyNameKeyword.value
-  }
+const fetchPurchaseList = async (isRetry = false) => {
+  if (pageState.loading || !pageState.hasMore) return
   
   try {
-    const resp = await postRequest('/version/ht/matter/stoin/list', para)
-    if (resp.status === 200 && resp.data.code === 0) {
-      const newRecords = resp.data.data.records || []
-      const total = resp.data.data.total || 0
-      
-      // 检查是否有重复数据
-      if (pageNum.value === 1) {
-        purchaseList.value = newRecords
-      } else {
-        const existingIds = new Set(purchaseList.value.map(item => item.stoinId))
-        const uniqueNewRecords = newRecords.filter(item => !existingIds.has(item.stoinId))
-        purchaseList.value = [...purchaseList.value, ...uniqueNewRecords]
-      }
-      
-      hasMore.value = purchaseList.value.length < total
-      if (hasMore.value) {
-        pageNum.value++
-      }
-    } else {
-      ElMessage({ message: '获取列表失败：' + (resp.data?.message || resp.statusText), type: 'error' })
+    pageState.loading = true
+
+    const params = {
+      ...queryParams,
+      pageNum: pageState.pageNum,
+      pageSize: pageState.pageSize
     }
+
+    const resp = await postRequest('/version/ht/matter/stoin/list', params)
+    
+    if (resp?.data?.code !== 0) {
+      throw new Error(resp.data?.message || '获取数据失败')
+    }
+
+    const { records = [], total = 0 } = resp.data.data
+    pageState.total = total
+    
+    if (pageState.pageNum === 1) {
+      purchaseList.value = records
+    } else {
+      const existingIds = new Set(purchaseList.value.map(item => item.stoinId))
+      purchaseList.value.push(...records.filter(item => !existingIds.has(item.stoinId)))
+    }
+    
+    pageState.hasMore = purchaseList.value.length < total
+    if (pageState.hasMore) {
+      pageState.pageNum++
+    }
+    
+    pageState.retryCount = 0
+    
   } catch (error) {
     console.error('获取列表失败:', error)
-    ElMessage({ message: '获取列表失败！', type: 'error' })
+    if (!isRetry && pageState.retryCount < pageState.maxRetries) {
+      pageState.retryCount++
+      await new Promise(resolve => setTimeout(resolve, 1000 * pageState.retryCount))
+      return fetchPurchaseList(true)
+    }
+    ElMessage.error(error.message || '获取列表失败！')
   } finally {
-    loading.value = false
-    isRequesting.value = false  // 重置请求状态
-    
-    // 延迟检查是否需要加载下一页
-    setTimeout(() => {
-      if (hasMore.value && document.documentElement.scrollHeight <= document.documentElement.clientHeight) {
-        fetchPurchaseList()
-      }
-    }, 100)
+    pageState.loading = false
   }
 }
 
-// 优化滚动处理函数
-const handleScroll = () => {
-  const scrollHeight = document.documentElement.scrollHeight
-  const scrollTop = document.documentElement.scrollTop
-  const clientHeight = document.documentElement.clientHeight
-  
-  if (!loading.value && !isRequesting.value && hasMore.value && 
-      scrollHeight - scrollTop - clientHeight < 500) {
+const handleScroll = throttle(() => {
+  const { scrollHeight, scrollTop, clientHeight } = document.documentElement
+  if (scrollHeight - scrollTop - clientHeight < 500) {
     fetchPurchaseList()
   }
-}
+}, 200)
 
 const handleSearch = () => {
-  pageNum.value = 1
-  hasMore.value = true
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  pageState.retryCount = 0
   showSearch.value = false
+  purchaseList.value = []
   fetchPurchaseList()
 }
 
@@ -347,5 +345,36 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.empty-text {
+  text-align: center;
+  padding: 40px 0;
+  color: #909399;
+  font-size: 14px;
+}
+
+.loading-text .loading {
+  animation: rotating 2s linear infinite;
+}
+
+@keyframes rotating {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
