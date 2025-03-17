@@ -17,6 +17,16 @@ const routes = [
     path: '/purchase/detail',
     name: 'PurchaseDetail',
     component: () => import('../views/PurchaseDetail.vue')
+  },
+  {
+    path: '/matterCategory',
+    name: 'MatterCategory',
+    component: () => import('../views/matterCategory.vue')
+  },
+  {
+    path: '/matterCategoryEdit/edit',
+    name: 'MatterCategoryEdit',
+    component: () => import('../views/matterCategoryEdit.vue')
   }
 ]
 

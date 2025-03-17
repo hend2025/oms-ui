@@ -129,7 +129,7 @@ const fetchPurchaseList = async (isRetry = false) => {
       pageSize: pageState.pageSize
     }
 
-    const resp = await postRequest('/version/ht/matter/stoin/list', params)
+    const resp = await postRequest('/version/ht/matterStoin/list', params)
     
     if (resp?.data?.code !== 0) {
       throw new Error(resp.data?.message || '获取数据失败')

@@ -26,7 +26,9 @@
         <p>财务对账</p>
       </div>
       <div class="icon">
-        <img src="../assets/hxjl.png" />
+        <router-link to="/matterCategory">
+          <img src="../assets/hxjl.png" />
+        </router-link>   
         <p>物料分类</p>
       </div>
       <div class="icon">
@@ -46,7 +48,7 @@
 </template>
 
 <script setup>
-// 这里可以添加逻辑代码，如果有需要的话
+ 
 </script>
 
 <style scoped>
