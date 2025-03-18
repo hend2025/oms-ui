@@ -86,7 +86,7 @@ const fetchCategoryList = async (pcode = '0', itemName = '') => {
     pageState.loading = true
     const params = {
       keyword: searchKey.value,
-      parentCode: pcode,
+      parentCode: pcode,  // 改用传入的 pcode，而不是 currentPcode
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize
     }
@@ -130,9 +130,13 @@ onUnmounted(() => {
 })
 
 watch(searchKey, () => {
+  // 重置分页和列表状态
   pageState.pageNum = 1
   pageState.hasMore = true
   categoryList.value = []
+  // 清空导航栈，回到顶级
+  // navigationStack.value = []
+  // currentPcode.value = '0'
   fetchCategoryList(currentPcode.value)
 })
 
@@ -150,6 +154,7 @@ const handleBack = () => {
 }
 
 const handleViewSub = (item) => {
+  searchKey.value = ''  // 进入子分类时清空搜索关键字
   pageState.pageNum = 1
   pageState.hasMore = true
   categoryList.value = []
