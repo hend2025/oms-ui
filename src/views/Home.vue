@@ -1,11 +1,12 @@
 
 <template>
   <div id="app">
-    <!-- 系统标题栏 -->
-    <div class="system-title-bar">
-      <!-- 订单管理 logo 图标 -->
-      <img src="../assets/index.jpg" alt="订单管理" />
+    <!-- 顶部标题栏 -->
+    <div class="header">
+      <div class="welcome">欢迎使用！</div>
+      <div class="system-title">销售订单管理系统</div>
     </div>
+
     <div class="function-icons">
       <div class="icon">
         <router-link to="/purchase">
@@ -52,25 +53,44 @@
 </script>
 
 <style scoped>
-/* 全局样式 */
+
 body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+  min-height: 100vh;
+  background-color: #f5f7fa;
 }
 
-/* 系统标题栏样式 */
-.system-title-bar {
-  height: 200px;
-  background-color: lightblue;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  img {
-    width: 100%;
-    height: 100%;
-  }
+.header {
+  background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
+  padding: 30px 20px 30px 20px;
+  color: white;
+}
 
+.welcome {
+  text-align: left;
+  font-size: 32px; 
+  margin-bottom: 6px; 
+  font-family: 'YouYuan', 'STZhongsong', sans-serif;
+  font-weight: bold;
+}
+
+.system-title {
+  padding-top: 10px;
+  text-align: center;
+  font-size: 36px; 
+  font-weight: bold;
+  font-family: 'YouYuan', 'STZhongsong', sans-serif;
+  background: linear-gradient(to right, #fff, #e6f3ff);
+  -webkit-background-clip: text;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
 }
 
 /* 功能图标区域样式 */

@@ -117,7 +117,7 @@ const handleDelete = () => {
 }
 
 .header {
-  background: linear-gradient(135deg, #409eff 0%, #a0cfff 100%);
+  background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
   padding: 20px;
   color: white;
   text-align: center;

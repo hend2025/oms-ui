@@ -6,27 +6,26 @@
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
-    <!-- 搜索栏 -->
     <div class="search-bar">
       <el-input
         v-model="searchKey"
         placeholder="请输入搜索关键词"
         clearable
         :prefix-icon="Search"
-      />
+      >
+        <template #append>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
     </div>
 
-    <!-- 分类列表 -->
     <div class="category-list">
         <div v-for="item in categoryList" 
              :key="item.matterCode" 
              class="category-item">
-          <div class="category-info">
+          <div class="category-info"  @click="handleViewSub(item)">   
             <div class="category-name">
               <span class="name-text">{{ item.matterName }}</span>
-              <div class="icon-group">
-                <el-icon class="edit-icon" @click.stop="handleEdit(item)"><Edit /></el-icon>
-              </div>
             </div>
             <div class="sub-count" v-if="item.subCount">
               子类数量：{{ item.subCount }}个
@@ -36,96 +35,125 @@
             </div>
           </div>
           <div class="item-actions">
-            <el-icon v-if="item.matterType === '1'" @click="handleViewSub(item)"><ArrowRight /></el-icon>
+            <el-icon><ArrowRight /></el-icon>
           </div>
         </div>
     </div>
 
+    <!-- 加载和提示信息移到这里 -->
+    <div v-if="pageState.loading" class="loading-text">
+      <el-icon class="loading"><Loading /></el-icon>
+      加载中...
+    </div>
+    <div v-if="!pageState.loading && !pageState.hasMore && categoryList.length > 0" class="no-more-text">
+      没有更多数据了
+    </div>
+    <div v-if="!pageState.loading && categoryList.length === 0" class="empty-text">
+      暂无数据
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
+import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import { Search, ArrowLeft, ArrowRight, Plus, Edit, Delete } from '@element-plus/icons-vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
 import { postRequest } from "../utils/api"
+import { throttle } from 'lodash-es'
 
 const router = useRouter()
 const searchKey = ref('')
 const categoryList = ref([])
 const navigationStack = ref([])
-const currentTitle = computed(() => navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].matterName : '物料分类')
+const currentPcode = ref('0')
+const currentTitle = computed(() => navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '分类维护')
 
-// 查询分类列表
-const fetchCategoryList = async (parentCode='0', matterName='物料分类') => {
-  if (!navigationStack.value.find(item => item.parentCode === parentCode) ) {
-    navigationStack.value.push({parentCode:parentCode,matterName:matterName})
+const pageState = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0,
+  hasMore: true,
+  loading: false
+})
+
+const fetchCategoryList = async (pcode = '0', itemName = '') => {
+  if (pageState.loading || !pageState.hasMore) return
+  currentPcode.value = pcode
+  if (pcode !== '0' && itemName) {
+    navigationStack.value.push({ pcode, name: itemName })
   }
   try {
+    pageState.loading = true
     const params = {
       keyword: searchKey.value,
-      parentCode: parentCode,
-      pageNum: 1,
-      pageSize: 10
+      parentCode: pcode,
+      pageNum: pageState.pageNum,
+      pageSize: pageState.pageSize
     }
-    const response = await postRequest('/version/ht/matterCategory/list', params)
-    if (response.data.code === 0) {
-      categoryList.value = response.data.data.records.map(item => ({
-        matterCode: item.matterCode,
-        matterName: item.matterName,
-        parentCode: item.parentCode,
-        matterType: item.matterType,
-        matterParam: item.matterParam,
-        subCount: item.subCount || 0
-      }))
+    const resp = await postRequest('/version/ht/matterCategory/list', params)
+    if (resp?.data?.code !== 0) {
+      throw new Error(resp.data?.message || '获取数据失败')
+    }
+    const { records = [], total = 0 } = resp.data.data
+    pageState.total = total
+    if (pageState.pageNum === 1) {
+      categoryList.value = records
     } else {
-      ElMessage.error(response.data.message || '查询失败')
+      const existingIds = new Set(categoryList.value.map(item => item.matterCode))
+      categoryList.value.push(...records.filter(item => !existingIds.has(item.matterCode)))
     }
+    pageState.hasMore = categoryList.value.length < total
+    if (pageState.hasMore) {
+      pageState.pageNum++
+    } 
   } catch (error) {
-    console.error('查询失败:', error)
-    ElMessage.error('查询失败')
+    console.error('获取列表失败:', error)
+  } finally {
+    pageState.loading = false
   }
 }
 
-const handleViewSub = (item) => {
-  fetchCategoryList(item.matterCode,item.matterName)
-}
+const handleScroll = throttle(() => {
+  const { scrollHeight, scrollTop, clientHeight } = document.documentElement
+  if (scrollHeight - scrollTop - clientHeight < 500) {
+    fetchCategoryList(currentPcode.value)
+  }
+}, 200)
+
+onMounted(() => {
+  fetchCategoryList()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+watch(searchKey, () => {
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  categoryList.value = []
+  fetchCategoryList(currentPcode.value)
+})
 
 const handleBack = () => {
-  if (navigationStack.value.length > 1) {
-    // 先移除当前层级
+  if (navigationStack.value.length > 0) {
     navigationStack.value.pop()
-    // 获取上一层级的信息
     const prevItem = navigationStack.value[navigationStack.value.length - 1]
-    // 使用上一层级的信息查询数据
-    fetchCategoryList(prevItem.parentCode,prevItem.matterName)
+    pageState.pageNum = 1
+    pageState.hasMore = true
+    categoryList.value = []
+    fetchCategoryList(prevItem ? prevItem.pcode : '0')
   } else {
-    // 如果只剩一层或没有层级，清空导航栈并返回首页
-    navigationStack.value = []
     router.back()
   }
 }
 
-// 页面加载时查询数据
-onMounted(() => {
-  fetchCategoryList()
-})
-
-const handleEdit = (item) => {
-    router.push({
-      path: '/matterCategoryEdit/edit',
-      query: { 
-        type: 'edit',
-        matterCode: item.matterCode,
-        matterName: item.matterName,
-        matterPcode: item.matterPcode,
-        matterType: item.matterType,
-        matterParam: item.matterParam,
-        subCount: item.subCount,
-        parentName: '顶级' 
-      }
-    })
+const handleViewSub = (item) => {
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  categoryList.value = []
+  fetchCategoryList(item.matterCode, item.matterName)
 }
 
 const handleAdd = () => {
@@ -134,7 +162,6 @@ const handleAdd = () => {
     query: { type: 'add' }
   })
 }
-
 </script>
 
 <style scoped>
@@ -144,78 +171,130 @@ const handleAdd = () => {
 }
 
 .header {
-  background: linear-gradient(135deg, #409eff 0%, #a0cfff 100%);
-  padding: 20px;
+  background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
+  padding: 16px;
   color: white;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  position: fixed; 
+  top: 0;         
+  left: 0;       
+  right: 0;       
+  z-index: 100;   
+}
+
+.search-bar {
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  margin-top: 60px;   
 }
 
 .header h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
 .back-icon, .add-icon {
   font-size: 20px;
   cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.back-icon:hover, .add-icon:hover {
+  transform: scale(1.1);
 }
 
 .search-bar {
-  padding: 15px;
+  padding: 16px;
   background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .category-list {
-  padding: 15px;
+  padding: 16px;
 }
 
 .category-item {
   background: white;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 10px;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.category-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .category-info {
   flex: 1;
+  padding-right: 16px;
 }
 
 .category-name {
   font-size: 16px;
   color: #333;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
+}
+
+.name-text {
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .sub-count {
   font-size: 14px;
-  color: #999;
+  color: #909399;
+  margin-top: 4px;
 }
 
-.icon-group {
+.item-actions {
+  color: #409eff;
+  font-size: 18px;
   display: flex;
   align-items: center;
-  margin-left: 8px;
+  gap: 12px;  
+  transition: transform 0.2s;
 }
 
-.edit-icon {
-  font-size: 16px;
-  color: #409eff;
-  cursor: pointer;
-  margin-left: 8px;
+.delete-icon {
+  color: #f56c6c;
 }
 
-.name-text {
-  font-weight: bold;
+.item-actions:hover {
+  transform: translateX(4px);
 }
+
+.loading-text,
+.no-more-text {
+  text-align: center;
+  color: #909399;
+  padding: 16px 0;
+  font-size: 14px;
+}
+
+.empty-text {
+  text-align: center;
+  padding: 40px 0;
+  color: #909399;
+  font-size: 14px;
+}
+
+.loading-text .loading {
+  animation: rotating 2s linear infinite;
+}
+
 </style>
 
