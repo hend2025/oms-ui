@@ -27,18 +27,24 @@
         <p>财务对账</p>
       </div>
       <div class="icon">
-        <router-link to="/matterCategory">
+        <router-link to="matter">
           <img src="../assets/hxjl.png" />
         </router-link>   
-        <p>物料分类</p>
+          <p>物料品类</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />
-        <p>产品分类</p>
+        <p>烟花品类</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />
         <p>客户管理</p>
+      </div>
+      <div class="icon">
+        <router-link to="/category">
+           <img src="../assets/hxjl.png" />
+        </router-link>
+        <p>分类维护</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />
@@ -49,7 +55,10 @@
 </template>
 
 <script setup>
- 
+import { useRouter } from 'vue-router'
+import { Goods } from '@element-plus/icons-vue'
+
+const router = useRouter()
 </script>
 
 <style scoped>

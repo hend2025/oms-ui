@@ -2,7 +2,7 @@
   <div class="category">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>{{ currentTitle }}</h1>
+      <h1>物料品类</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -18,27 +18,24 @@
         </template>
       </el-input>
     </div>
-
-    <div class="category-list">
-        <div v-for="item in categoryList" 
-             :key="item.matterCode" 
-             class="category-item">
-          <div class="category-info"  @click="handleViewSub(item)">   
-            <div class="category-name">
-              <span class="name-text">{{ item.matterName }}</span>
-            </div>
-            <div class="sub-count" v-if="item.subCount">
-              子类数量：{{ item.subCount }}个
-            </div>
-            <div class="sub-count" v-if="item.para">
-              规格参数：{{ item.matterParam }}
-            </div>
-          </div>
-          <div class="item-actions">
-            <el-icon><ArrowRight /></el-icon>
+ 
+    <div class="list-area">
+      <div v-for="item in categoryList" 
+      :key="item.matterId" 
+           class="purchase-item"
+           @click="handleEdit(item)">
+        <div class="item-header">
+          <span class="item-name">{{ item.matterName }}</span>
+          <span class="item-name">{{ item.categoryCode }}</span>
+        </div>
+        <div class="item-content">
+          <div class="item-info">
+            <span>{{ item.matterCode }}</span>
+            <span>{{ item.matterParam }}</span>
           </div>
         </div>
-    </div>
+      </div> 
+    </div>     
 
     <!-- 加载和提示信息移到这里 -->
     <div v-if="pageState.loading" class="loading-text">
@@ -51,12 +48,13 @@
     <div v-if="!pageState.loading && categoryList.length === 0" class="empty-text">
       暂无数据
     </div>
+    
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
-import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
+import { Search, ArrowLeft, Plus, Loading } from '@element-plus/icons-vue' 
 import { useRouter } from 'vue-router'
 import { postRequest } from "../utils/api"
 import { throttle } from 'lodash-es'
@@ -64,9 +62,6 @@ import { throttle } from 'lodash-es'
 const router = useRouter()
 const searchKey = ref('')
 const categoryList = ref([])
-const navigationStack = ref([])
-const currentPcode = ref('0')
-const currentTitle = computed(() => navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '分类维护')
 
 const pageState = reactive({
   pageNum: 1,
@@ -76,21 +71,16 @@ const pageState = reactive({
   loading: false
 })
 
-const fetchCategoryList = async (pcode = '0', itemName = '') => {
+const fetchCategoryList = async () => {
   if (pageState.loading || !pageState.hasMore) return
-  currentPcode.value = pcode
-  if (pcode !== '0' && itemName) {
-    navigationStack.value.push({ pcode, name: itemName })
-  }
   try {
     pageState.loading = true
     const params = {
       keyword: searchKey.value,
-      parentCode: pcode,  // 改用传入的 pcode，而不是 currentPcode
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize
     }
-    const resp = await postRequest('/version/ht/matterCategory/list', params)
+    const resp = await postRequest('/version/ht/matter/list', params) 
     if (resp?.data?.code !== 0) {
       throw new Error(resp.data?.message || '获取数据失败')
     }
@@ -99,8 +89,8 @@ const fetchCategoryList = async (pcode = '0', itemName = '') => {
     if (pageState.pageNum === 1) {
       categoryList.value = records
     } else {
-      const existingIds = new Set(categoryList.value.map(item => item.matterCode))
-      categoryList.value.push(...records.filter(item => !existingIds.has(item.matterCode)))
+      const existingIds = new Set(categoryList.value.map(item => item.matterId))
+      categoryList.value.push(...records.filter(item => !existingIds.has(item.matterId)))
     }
     pageState.hasMore = categoryList.value.length < total
     if (pageState.hasMore) {
@@ -116,7 +106,7 @@ const fetchCategoryList = async (pcode = '0', itemName = '') => {
 const handleScroll = throttle(() => {
   const { scrollHeight, scrollTop, clientHeight } = document.documentElement
   if (scrollHeight - scrollTop - clientHeight < 500) {
-    fetchCategoryList(currentPcode.value)
+    fetchCategoryList()
   }
 }, 200)
 
@@ -130,46 +120,27 @@ onUnmounted(() => {
 })
 
 watch(searchKey, () => {
-  // 重置分页和列表状态
   pageState.pageNum = 1
   pageState.hasMore = true
   categoryList.value = []
-  // 清空导航栈，回到顶级
-  // navigationStack.value = []
-  // currentPcode.value = '0'
-  fetchCategoryList(currentPcode.value)
+  fetchCategoryList()
 })
 
 const handleBack = () => {
-  if (navigationStack.value.length > 0) {
-    navigationStack.value.pop()
-    const prevItem = navigationStack.value[navigationStack.value.length - 1]
-    pageState.pageNum = 1
-    pageState.hasMore = true
-    categoryList.value = []
-    fetchCategoryList(prevItem ? prevItem.pcode : '0')
-  } else {
-    router.back()
-  }
-}
-
-const handleViewSub = (item) => {
-  searchKey.value = ''  // 进入子分类时清空搜索关键字
-  pageState.pageNum = 1
-  pageState.hasMore = true
-  categoryList.value = []
-  fetchCategoryList(item.matterCode, item.matterName)
+  router.back()
 }
 
 const handleAdd = () => {
-  router.push({
-    path: '/matterCategoryEdit/edit',
-    query: { type: 'add' }
-  })
+  router.push('/matterForm')  // 修改为正确的路由路径
+}
+
+const handleEdit = (item) => {
+  router.push(`/matterForm?id=${item.matterId}`)  // 修改为正确的路由路径
 }
 </script>
 
 <style scoped>
+
 .category {
   min-height: 100vh;
   background-color: #f5f7fa;
@@ -219,71 +190,61 @@ const handleAdd = () => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-.category-list {
+.list-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   padding: 16px;
 }
 
-.category-item {
+.purchase-item {
   background: white;
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.category-item:hover {
+.purchase-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-.category-info {
-  flex: 1;
-  padding-right: 16px;
-}
-
-.category-name {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 8px;
+.item-header {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
 }
 
-.name-text {
-  font-weight: 600;
+.item-name, .item-date {
+  font-weight: bold;
+  font-size: 16px;
   color: #2c3e50;
 }
 
-.sub-count {
-  font-size: 14px;
-  color: #909399;
-  margin-top: 4px;
+.item-date {
+  text-align: right;
 }
 
-.item-actions {
-  color: #409eff;
-  font-size: 18px;
+.item-content {
   display: flex;
-  align-items: center;
-  gap: 12px;  
-  transition: transform 0.2s;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.delete-icon {
-  color: #f56c6c;
-}
-
-.item-actions:hover {
-  transform: translateX(4px);
+.item-info {
+  display: flex;
+  justify-content: space-between;
+  color: #606266;
+  font-size: 14px;
 }
 
 .loading-text,
-.no-more-text {
+.no-more-text,
+.empty-text {
   text-align: center;
   color: #909399;
   padding: 16px 0;
@@ -291,15 +252,15 @@ const handleAdd = () => {
 }
 
 .empty-text {
-  text-align: center;
   padding: 40px 0;
-  color: #909399;
-  font-size: 14px;
 }
 
 .loading-text .loading {
   animation: rotating 2s linear infinite;
 }
 
+@keyframes rotating {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 </style>
-

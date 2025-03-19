@@ -19,14 +19,30 @@ const routes = [
     component: () => import('../views/PurchaseDetail.vue')
   },
   {
-    path: '/matterCategory',
-    name: 'MatterCategory',
-    component: () => import('../views/matterCategory.vue')
+    path: '/category',
+    name: 'Category',
+    component: () => import('../views/category.vue')
   },
   {
-    path: '/matterCategoryEdit/edit',
-    name: 'MatterCategoryEdit',
-    component: () => import('../views/matterCategoryEdit.vue')
+    path: '/categoryForm',
+    name: 'CategoryForm',
+    component: () => import('../views/categoryForm.vue')
+  },
+  {
+    path: '/matter',
+    name: 'Matter',
+    component: () => import('../views/matter.vue'),
+    meta: {
+      title: '物料品类'
+    }
+  },
+  {
+    path: '/matterForm',
+    name: 'MatterForm',
+    component: () => import('../views/matterForm.vue'),
+    meta: {
+      title: '物料表单'
+    }
   }
 ]
 
