@@ -23,12 +23,12 @@
         <div v-for="item in categoryList" 
              :key="item.categoryCode" 
              class="category-item">
-          <div class="category-info"  @click="handleViewSub(item)">   
+          <div class="category-info" @click="handleViewSub(item)">   
             <div class="category-name">
               <span class="name-text">{{ item.categoryName }}</span>
             </div>
           </div>
-          <div class="item-actions">
+          <div class="item-actions" v-if="item.childNum>0">
             <el-icon><ArrowRight /></el-icon>
           </div>
         </div>
@@ -52,11 +52,14 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
 import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'  // 添加 useRoute
 import { postRequest } from "../utils/api"
 import { throttle } from 'lodash-es'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()  // 添加这行
+
 const searchKey = ref('')
 const categoryList = ref([])
 const navigationStack = ref([])
@@ -148,11 +151,36 @@ const handleBack = () => {
 }
 
 const handleViewSub = (item) => {
-  searchKey.value = '' 
-  pageState.pageNum = 1
-  pageState.hasMore = true
-  categoryList.value = []
-  fetchCategoryList(item.categoryCode, item.categoryName)
+  // 如果是从物料表单页面跳转来的选择模式
+  if (route.query.select === 'true' && route.query.from === 'matter') {
+    if (item.childNum === 0) {
+      // 选中叶子节点，返回物料表单页面
+      router.back()
+      // 通过 localStorage 临时存储所选分类信息
+      localStorage.setItem('selectedCategory', JSON.stringify({
+        categoryCode: item.categoryCode,
+        categoryName: item.categoryName
+      }))
+    } else {
+      // 非叶子节点，继续浏览子分类
+      searchKey.value = '' 
+      pageState.pageNum = 1
+      pageState.hasMore = true
+      categoryList.value = []
+      fetchCategoryList(item.categoryCode, item.categoryName)
+    }
+  } else {
+    // 普通浏览模式
+    if (item.childNum === 0) {
+      ElMessage.warning('该分类下没有子分类')
+      return
+    }
+    searchKey.value = '' 
+    pageState.pageNum = 1
+    pageState.hasMore = true
+    categoryList.value = []
+    fetchCategoryList(item.categoryCode, item.categoryName)
+  }
 }
 
 const handleAdd = () => {

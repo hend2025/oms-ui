@@ -22,7 +22,11 @@
         </el-form-item>
 
         <el-form-item label="分类编码" prop="categoryCode">
-          <el-input v-model="formData.categoryCode" placeholder="请输入分类编码" />
+          <div class="category-select" @click="handleCategoryClick">
+            <span v-if="formData.categoryCode">{{ formData.categoryCode }}</span>
+            <span v-else class="placeholder">请选择分类</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
         </el-form-item>
 
         <el-form-item label="物料参数" prop="matterParam">
@@ -41,7 +45,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft, Delete } from '@element-plus/icons-vue'
+// 添加引入
+import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
 import { postRequest } from "../utils/api"
 import { ElMessage } from 'element-plus'
 
@@ -65,6 +70,15 @@ const rules = {
 }
 
 onMounted(async () => {
+  // 检查是否有选中的分类
+  const selectedCategory = localStorage.getItem('selectedCategory')
+  if (selectedCategory) {
+    const category = JSON.parse(selectedCategory)
+    formData.categoryCode = category.categoryCode
+    // 清除临时存储
+    localStorage.removeItem('selectedCategory')
+  }
+
   const id = route.query.id
   if (id) {
     isEdit.value = true
@@ -99,6 +113,17 @@ const handleSubmit = async () => {
 
 const handleBack = () => {
   router.back()
+}
+
+// 添加分类选择跳转方法
+const handleCategoryClick = () => {
+  router.push({
+    path: '/category',
+    query: {
+      select: 'true',
+      from: 'matter'
+    }
+  })
 }
 </script>
 
@@ -168,4 +193,32 @@ const handleBack = () => {
   color: #fff;
 }
 
+.category-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background-color: var(--el-input-bg-color, #fff);
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: var(--el-font-size-base);
+}
+
+.category-select:hover {
+  border-color: var(--el-border-color-hover);
+}
+
+.category-select .placeholder {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--el-font-size-base);
+}
+
+.category-select .el-icon {
+  font-size: 14px;
+  color: var(--el-text-color-placeholder);
+}
 </style>
