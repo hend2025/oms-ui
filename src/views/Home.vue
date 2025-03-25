@@ -30,11 +30,11 @@
         <router-link to="matter">
           <img src="../assets/hxjl.png" />
         </router-link>   
-          <p>物料品类</p>
+          <p>物料种类</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />
-        <p>烟花品类</p>
+        <p>烟花种类</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />

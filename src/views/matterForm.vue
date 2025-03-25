@@ -11,7 +11,7 @@
         ref="formRef"
         :model="formData"
         :rules="rules"
-        label-width="100px"
+        label-width="80px"
       >
         <el-form-item label="物料名称" prop="matterName">
           <el-input v-model="formData.matterName" placeholder="请输入物料名称" />
@@ -161,9 +161,9 @@ const handleCategoryClick = () => {
 }
 
 .form-container {
-  padding: 20px;
+  padding: 20px 15px 10px 10px;
   background: #fff;
-  margin: 15px;
+  margin: 10px;
   border-radius: 8px;
 }
 
@@ -202,23 +202,40 @@ const handleCategoryClick = () => {
   border: 1px solid var(--el-border-color);
   border-radius: 4px;
   cursor: pointer;
-  height: 32px;
+  height: 42px;  /* 从32px增加到42px */
   width: 100%;
   box-sizing: border-box;
   font-size: var(--el-font-size-base);
 }
 
-.category-select:hover {
-  border-color: var(--el-border-color-hover);
+/* 添加对 el-input 的样式覆盖 */
+:deep(.el-input__wrapper) {
+  height: 42px;
+}
+
+:deep(.el-input__inner) {
+  height: 42px;
+  line-height: 42px;
+  font-size: 14px;  /* 增加字体大小 */
+}
+
+.category-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background-color: var(--el-input-bg-color, #fff);
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  height: 42px;  /* 从32px增加到42px */
+  width: 100%;
+  box-sizing: border-box;
+  font-size: var(--el-font-size-base);
 }
 
 .category-select .placeholder {
   color: var(--el-text-color-placeholder);
-  font-size: var(--el-font-size-base);
-}
-
-.category-select .el-icon {
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
+  font-size: 14px;  /* 增加字体大小，保持一致 */
 }
 </style>
