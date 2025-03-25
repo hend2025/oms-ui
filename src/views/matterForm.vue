@@ -2,7 +2,7 @@
   <div class="category-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改分类' : '新增分类' }}</h1>
+      <h1>{{ isEdit ? '修改物料种类' : '新增物料种类' }}</h1>
       <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 
@@ -26,6 +26,12 @@
             <span v-if="formData.categoryCode">{{ formData.categoryCode }}</span>
             <span v-else class="placeholder">请选择分类</span>
             <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="分类名称">
+          <div class="category-name-display">
+            {{ formData.categoryName || '-' }}
           </div>
         </el-form-item>
 
@@ -60,22 +66,17 @@ const formData = reactive({
   matterName: '',
   matterCode: '',
   categoryCode: '',
+  categoryName: '',  
   matterParam: ''
 })
 
-const rules = {
-  matterName: [{ required: true, message: '请输入物料名称', trigger: 'blur' }],
-  matterCode: [{ required: true, message: '请输入物料编码', trigger: 'blur' }],
-  categoryCode: [{ required: true, message: '请输入分类编码', trigger: 'blur' }]
-}
-
+// 修改选中分类的处理
 onMounted(async () => {
-  // 检查是否有选中的分类
   const selectedCategory = localStorage.getItem('selectedCategory')
   if (selectedCategory) {
     const category = JSON.parse(selectedCategory)
     formData.categoryCode = category.categoryCode
-    // 清除临时存储
+    formData.categoryName = category.categoryName  
     localStorage.removeItem('selectedCategory')
   }
 
@@ -237,5 +238,18 @@ const handleCategoryClick = () => {
 .category-select .placeholder {
   color: var(--el-text-color-placeholder);
   font-size: 14px;  /* 增加字体大小，保持一致 */
+}
+
+.category-name-display {
+  height: 42px;
+  line-height: 42px;
+  padding: 0 12px;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  color: #909399;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="category">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>物料品类</h1>
+      <h1>物料种类</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
