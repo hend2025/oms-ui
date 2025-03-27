@@ -2,7 +2,7 @@
   <div class="category-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改物料种类' : '新增物料种类' }}</h1>
+      <h1>{{ isEdit ? '修改物料' : '新增物料' }}</h1>
       <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 
@@ -13,30 +13,32 @@
         :rules="rules"
         label-width="80px"
       >
-        <el-form-item label="物料名称" prop="matterName">
+      <el-form-item label="分类名称" prop="categoryName" required>
+          <div class="category-select" @click="handleCategoryClick">
+            <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
+            <span v-else class="placeholder">请选择分类</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="物料名称" prop="matterName" required>
           <el-input v-model="formData.matterName" placeholder="请输入物料名称" />
         </el-form-item>
         
         <el-form-item label="物料编码" prop="matterCode">
           <el-input v-model="formData.matterCode" placeholder="请输入物料编码" />
         </el-form-item>
-
-        <el-form-item label="分类编码" prop="categoryCode">
-          <div class="category-select" @click="handleCategoryClick">
-            <span v-if="formData.categoryCode">{{ formData.categoryCode }}</span>
-            <span v-else class="placeholder">请选择分类</span>
-            <el-icon><ArrowRight /></el-icon>
-          </div>
+                
+        <el-form-item label="物料别名" prop="aliasName">
+          <el-input v-model="formData.aliasName" placeholder="请输入物料别名" />
         </el-form-item>
 
-        <el-form-item label="分类名称">
-          <div class="category-name-display">
-            {{ formData.categoryName || '-' }}
-          </div>
+        <el-form-item label="物料拼音" prop="pinyin">
+          <el-input v-model="formData.pinyin" placeholder="请输入物料拼音" />
         </el-form-item>
 
-        <el-form-item label="物料参数" prop="matterParam">
-          <el-input v-model="formData.matterParam" placeholder="请输入物料参数" />
+        <el-form-item label="物料参数" prop="param">
+          <el-input v-model="formData.param" placeholder="请输入物料参数" />
         </el-form-item>
 
         <div class="form-footer">
@@ -51,9 +53,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-// 添加引入
 import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
-import { postRequest } from "../utils/api"
+import { postRequest,getRequest } from "../utils/api"
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -65,26 +66,47 @@ const formData = reactive({
   matterId: '',
   matterName: '',
   matterCode: '',
-  categoryCode: '',
+  categoryId: '',
   categoryName: '',  
-  matterParam: ''
+  aliasName: '',
+  pinyin: '',
+  param: ''
 })
 
-// 修改选中分类的处理
+const handleCategoryClick = () => {
+  localStorage.setItem('matterFormTemp', JSON.stringify(formData))
+  router.push({
+    path: '/category',
+    query: {
+      select: 'true',
+      from: 'matter'
+    }
+  })
+}
+
 onMounted(async () => {
+  const tempFormData = localStorage.getItem('matterFormTemp')
+  if (tempFormData) {
+    const savedData = JSON.parse(tempFormData)
+    Object.assign(formData, savedData)
+    isEdit.value = !!savedData.matterId  // 根据是否有 matterId 判断是否为编辑状态
+    localStorage.removeItem('matterFormTemp')
+  }
+
   const selectedCategory = localStorage.getItem('selectedCategory')
   if (selectedCategory) {
     const category = JSON.parse(selectedCategory)
-    formData.categoryCode = category.categoryCode
+    formData.categoryId = category.categoryId
     formData.categoryName = category.categoryName  
     localStorage.removeItem('selectedCategory')
+    return
   }
 
   const id = route.query.id
   if (id) {
     isEdit.value = true
     try {
-      const resp = await postRequest('/version/ht/matter/detail', { matterId: id })
+      const resp = await getRequest(`/version/ht/matter/info/${id}`)
       if (resp?.data?.code === 0) {
         Object.assign(formData, resp.data.data)
       }
@@ -116,15 +138,13 @@ const handleBack = () => {
   router.back()
 }
 
-// 添加分类选择跳转方法
-const handleCategoryClick = () => {
-  router.push({
-    path: '/category',
-    query: {
-      select: 'true',
-      from: 'matter'
-    }
-  })
+const rules = {
+  categoryId: [
+    { required: true, message: '请选择分类编码', trigger: 'change' }
+  ],
+  matterName: [
+    { required: true, message: '请输入物料名称', trigger: 'blur' }
+  ]
 }
 </script>
 

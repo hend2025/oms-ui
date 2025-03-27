@@ -21,7 +21,7 @@
 
     <div class="category-list">
         <div v-for="item in categoryList" 
-             :key="item.categoryCode" 
+             :key="item.categoryId" 
              class="category-item">
           <div class="category-info" @click="handleViewSub(item)">   
             <div class="category-name">
@@ -52,13 +52,13 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
 import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
-import { useRouter, useRoute } from 'vue-router'  // 添加 useRoute
+import { useRouter, useRoute } from 'vue-router'
 import { postRequest } from "../utils/api"
 import { throttle } from 'lodash-es'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const route = useRoute()  // 添加这行
+const route = useRoute()  
 
 const searchKey = ref('')
 const categoryList = ref([])
@@ -84,7 +84,7 @@ const fetchCategoryList = async (pcode = '0', itemName = '') => {
     pageState.loading = true
     const params = {
       keyword: searchKey.value,
-      parentCode: pcode, 
+      parentId: pcode, 
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize
     }
@@ -97,8 +97,8 @@ const fetchCategoryList = async (pcode = '0', itemName = '') => {
     if (pageState.pageNum === 1) {
       categoryList.value = records
     } else {
-      const existingIds = new Set(categoryList.value.map(item => item.categoryCode))
-      categoryList.value.push(...records.filter(item => !existingIds.has(item.categoryCode)))
+      const existingIds = new Set(categoryList.value.map(item => item.categoryId))
+      categoryList.value.push(...records.filter(item => !existingIds.has(item.categoryId)))
     }
     pageState.hasMore = categoryList.value.length < total
     if (pageState.hasMore) {
@@ -131,9 +131,6 @@ watch(searchKey, () => {
   pageState.pageNum = 1
   pageState.hasMore = true
   categoryList.value = []
-  // 清空导航栈，回到顶级
-  // navigationStack.value = []
-  // currentPcode.value = '0'
   fetchCategoryList(currentPcode.value)
 })
 
@@ -151,26 +148,21 @@ const handleBack = () => {
 }
 
 const handleViewSub = (item) => {
-  // 如果是从物料表单页面跳转来的选择模式
   if (route.query.select === 'true' && route.query.from === 'matter') {
     if (item.childNum === 0) {
-      // 选中叶子节点，返回物料表单页面
       router.back()
-      // 通过 localStorage 临时存储所选分类信息
       localStorage.setItem('selectedCategory', JSON.stringify({
-        categoryCode: item.categoryCode,
+        categoryId: item.categoryId,
         categoryName: item.categoryName
       }))
     } else {
-      // 非叶子节点，继续浏览子分类
       searchKey.value = '' 
       pageState.pageNum = 1
       pageState.hasMore = true
       categoryList.value = []
-      fetchCategoryList(item.categoryCode, item.categoryName)
+      fetchCategoryList(item.categoryId, item.categoryName)
     }
   } else {
-    // 普通浏览模式
     if (item.childNum === 0) {
       ElMessage.warning('该分类下没有子分类')
       return
@@ -179,7 +171,7 @@ const handleViewSub = (item) => {
     pageState.pageNum = 1
     pageState.hasMore = true
     categoryList.value = []
-    fetchCategoryList(item.categoryCode, item.categoryName)
+    fetchCategoryList(item.categoryId, item.categoryName)
   }
 }
 

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const postRequest = (url, params) => {
+export const postRequest = (url, params={pageNum:1,pageSize:10}) => {
   return axios({
     method: 'post',
     url: `${url}`,
@@ -13,7 +13,7 @@ export const postRequest = (url, params) => {
   })
 }
 
-export const getRequest = (url, params) => {
+export const getRequest = (url, params={pageNum:1,pageSize:10}) => {
   return axios({
     method: 'get',
     url: `${url}`,

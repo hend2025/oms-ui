@@ -26,12 +26,12 @@
            @click="handleEdit(item)">
         <div class="item-header">
           <span class="item-name">{{ item.matterName }}</span>
-          <span class="item-name">{{ item.categoryCode }}</span>
+          <span class="item-name">{{ item.matterCode }}</span>
         </div>
         <div class="item-content">
           <div class="item-info">
-            <span>{{ item.matterCode }}</span>
-            <span>{{ item.matterParam }}</span>
+            <span>{{ item.aliasName }}</span>
+            <span>{{ item.param }}</span>
           </div>
         </div>
       </div> 
