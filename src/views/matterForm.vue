@@ -37,8 +37,8 @@
           <el-input v-model="formData.pinyin" placeholder="请输入首拼" />
         </el-form-item>
 
-        <el-form-item label="参数" prop="param">
-          <el-input v-model="formData.param" placeholder="请输入参数" />
+        <el-form-item label="参数" prop="matterPara">
+          <el-input v-model="formData.matterPara" placeholder="请输入参数" />
         </el-form-item>
 
         <div class="form-footer">
@@ -70,7 +70,7 @@ const formData = reactive({
   categoryName: '',  
   aliasName: '',
   pinyin: '',
-  param: ''
+  matterPara: ''
 })
 
 const handleCategoryClick = () => {

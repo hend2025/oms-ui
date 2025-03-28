@@ -31,7 +31,7 @@
         <div class="item-content">
           <div class="item-info">
             <span>{{ item.aliasName }}</span>
-            <span>{{ item.param }}</span>
+            <span>{{ item.matterPara }}</span>
           </div>
         </div>
       </div> 
