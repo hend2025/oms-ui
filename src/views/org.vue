@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>机构管理</h1>
+      <h1>客户管理</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -60,11 +60,13 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'  
 import { Search, ArrowLeft, Plus, Loading } from '@element-plus/icons-vue' 
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'  // 添加 useRoute
 import { postRequest } from "../utils/api"
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()  // 添加这行
+
 const searchKey = ref('')
 const orgList = ref([])
 const pageState = reactive({
@@ -114,13 +116,23 @@ const handleBack = () => router.back()
 const handleAdd = () => router.push('/orgForm')
 
 const handleEdit = (item) => {
-  localStorage.setItem('orgListState', JSON.stringify({
-    pageNum: pageState.pageNum,
-    scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
-    keyword: searchKey.value,
-    list: orgList.value
-  }))
-  router.push(`/orgForm?id=${item.orgId}`)
+  // 直接使用 route.query.select 进行判断
+  if (route.query.select === 'true') {
+    localStorage.setItem('selectedOrg', JSON.stringify({
+      orgId: item.orgId,
+      orgName: item.orgName,
+      orgCode: item.orgCode
+    }))
+    router.back()
+  } else {
+    localStorage.setItem('orgListState', JSON.stringify({
+      pageNum: pageState.pageNum,
+      scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
+      keyword: searchKey.value,
+      list: orgList.value
+    }))
+    router.push(`/orgForm?id=${item.orgId}`)
+  }
 }
 
 onMounted(async () => {

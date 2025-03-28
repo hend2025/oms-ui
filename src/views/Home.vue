@@ -4,45 +4,45 @@
     <!-- 顶部标题栏 -->
     <div class="header">
       <div class="welcome">欢迎使用！</div>
-      <div class="system-title">智能场景监控系统</div>
+      <div class="system-title">销售订单管理系统</div>
     </div>
 
     <div class="function-icons">
-      <div class="icon">
-          <img src="../assets/hxjl.png" />
-          <p>日常查床</p>
-      </div>
-      <div class="icon">
-        <img src="../assets/hxjl.png" />
-        <p>在院人员</p>
-      </div>
-      <div class="icon">
-        <img src="../assets/hxjl.png" />
-        <p>签到签退</p>
-      </div>
-      <div class="icon">
+      <div class="icon">‘
         <router-link to="stoin">
-           <img src="../assets/hxjl.png" />
+          <img src="../assets/hxjl.png" />
         </router-link>
-        <p>异常申诉</p>
+          <p>物料采购</p>
+      </div>
+      <div class="icon">
+        <img src="../assets/hxjl.png" />
+        <p>订单管理</p>
+      </div>
+      <div class="icon">
+        <img src="../assets/hxjl.png" />
+        <p>收支记账</p>
+      </div>
+      <div class="icon">
+           <img src="../assets/hxjl.png" />
+        <p>财务对账</p>
       </div>
       <div class="icon">
         <router-link to="matter">
           <img src="../assets/hxjl.png" />
         </router-link>   
-          <p>页面实例</p>
+          <p>物料分类</p>
       </div>
       <div class="icon">
         <router-link to="/category">
            <img src="../assets/hxjl.png" />
         </router-link>
-        <p>基础控件</p>
+        <p>分类维护</p>
       </div>
       <div class="icon">
         <router-link to="/org">
            <img src="../assets/hxjl.png" />
         </router-link>
-        <p>机构管理</p>
+        <p>客户管理</p>
       </div>
     </div>
   </div>

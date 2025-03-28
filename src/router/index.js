@@ -42,8 +42,8 @@ const routes = [
     component: () => import('../views/stoin.vue')
   },
   {
-    path: '/stoin/form/:id?',
-    name: 'stoinForm',
+    path: '/stoinForm',
+    name: 'StoinForm',
     component: () => import('../views/stoinForm.vue')
   }
 ]

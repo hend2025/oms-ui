@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>XX管理</h1>
+      <h1>物料采购</h1>
       <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -34,7 +34,7 @@
           <span>金额：{{ item.stoinCnt }}元</span>
         </div>
         <div class="item-info">
-          <span>机构：{{ item.orgName }}</span>
+          <span>供货商：{{ item.orgName }}</span>
         </div>
       </div>
 
@@ -129,11 +129,11 @@ const handleBack = () => {
 }
 
 const handleAdd = () => {
-  router.push('/stoin/form')
+  router.push('/stoinform')
 }
 
 const handleEdit = (item) => {
-  router.push(`/stoin/form/${item.stoinId}`)
+  router.push(`/stoinform?id=${item.stoinId}`)
 }
 
 onMounted(() => {

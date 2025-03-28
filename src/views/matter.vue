@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>页面实例</h1>
+      <h1>物料分类</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -20,7 +20,7 @@
     </div>
  
     <div class="list-area">
-      <div v-for="item in categoryList" 
+      <div v-for="item in matterList" 
       :key="item.matterId" 
            class="purchase-item"
            @click="handleEdit(item)">
@@ -42,10 +42,10 @@
       <el-icon class="loading"><Loading /></el-icon>
       加载中...
     </div>
-    <div v-if="!pageState.loading && !pageState.hasMore && categoryList.length > 0" class="no-more-text">
+    <div v-if="!pageState.loading && !pageState.hasMore && matterList.length > 0" class="no-more-text">
       没有更多数据了
     </div>
-    <div v-if="!pageState.loading && categoryList.length === 0" class="empty-text">
+    <div v-if="!pageState.loading && matterList.length === 0" class="empty-text">
       暂无数据
     </div>
     
@@ -55,13 +55,14 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
 import { Search, ArrowLeft, Plus, Loading } from '@element-plus/icons-vue' 
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'  
 import { postRequest } from "../utils/api"
 import { throttle } from 'lodash-es'
 
+const route = useRoute()  
 const router = useRouter()
 const searchKey = ref('')
-const categoryList = ref([])
+const matterList = ref([])
 
 const pageState = reactive({
   pageNum: 1,
@@ -71,28 +72,29 @@ const pageState = reactive({
   loading: false
 })
 
-const fetchCategoryList = async () => {
+const fetchMatterList = async () => {
   if (pageState.loading || !pageState.hasMore) return
   try {
     pageState.loading = true
     const params = {
       keyword: searchKey.value,
       pageNum: pageState.pageNum,
-      pageSize: pageState.pageSize
+      pageSize: pageState.pageSize,
+      categoryId: route.query.categoryId || ''
     }
-    const resp = await postRequest('/version/ht/matter/list', params) 
+    const resp = await postRequest('/version/ht/matter/list', params)
     if (resp?.data?.code !== 0) {
       throw new Error(resp.data?.message || '获取数据失败')
     }
     const { records = [], total = 0 } = resp.data.data
     pageState.total = total
     if (pageState.pageNum === 1) {
-      categoryList.value = records
+      matterList.value = records
     } else {
-      const existingIds = new Set(categoryList.value.map(item => item.matterId))
-      categoryList.value.push(...records.filter(item => !existingIds.has(item.matterId)))
+      const existingIds = new Set(matterList.value.map(item => item.matterId))
+      matterList.value.push(...records.filter(item => !existingIds.has(item.matterId)))
     }
-    pageState.hasMore = categoryList.value.length < total
+    pageState.hasMore = matterList.value.length < total
     if (pageState.hasMore) {
       pageState.pageNum++
     } 
@@ -106,12 +108,42 @@ const fetchCategoryList = async () => {
 const handleScroll = throttle(() => {
   const { scrollHeight, scrollTop, clientHeight } = document.documentElement
   if (scrollHeight - scrollTop - clientHeight < 500) {
-    fetchCategoryList()
+    fetchMatterList()
   }
 }, 200)
 
+const handleBack = () => {
+  router.back()
+}
+
+const handleAdd = () => {
+  router.push('/matterForm')  
+}
+
+const handleEdit = (item) => {
+  if (route.query.select === 'true') {
+    localStorage.setItem('selectedMatter', JSON.stringify({
+      matterId: item.matterId,
+      matterName: item.matterName,
+      matterCode: item.matterCode,
+      matterPara: item.matterPara,
+      categoryId: item.categoryId,
+      categoryName: item.categoryName
+    }))
+    router.back()
+  } else {
+    localStorage.setItem('matterListState', JSON.stringify({
+      pageNum: pageState.pageNum,
+      scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
+      keyword: searchKey.value,
+      list: matterList.value
+    }))
+    router.push(`/matterForm?id=${item.matterId}`)
+  }
+}
+
 onMounted(() => {
-  fetchCategoryList()
+  fetchMatterList()
   window.addEventListener('scroll', handleScroll)
 })
 
@@ -122,55 +154,15 @@ onUnmounted(() => {
 watch(searchKey, () => {
   pageState.pageNum = 1
   pageState.hasMore = true
-  categoryList.value = []
-  fetchCategoryList()
+  matterList.value = []
+  fetchMatterList()
 })
 
-const handleBack = () => {
-  router.back()
-}
-
-const handleAdd = () => {
-  router.push('/matterForm')  
-}
-
-// 修改 handleEdit 方法
-const handleEdit = (item) => {
-  // 保存当前列表状态
-  localStorage.setItem('matterListState', JSON.stringify({
-    pageNum: pageState.pageNum,
-    scrollPosition: window.scrollY,
-    keyword: searchKey.value,
-    list: categoryList.value
-  }))
-  router.push(`/matterForm?id=${item.matterId}`)  
-}
-
-// 修改 onMounted
-onMounted(async () => {
-  const savedState = localStorage.getItem('matterListState')
-  
-  if (savedState) {
-    const state = JSON.parse(savedState)
-    pageState.pageNum = 1
-    searchKey.value = state.keyword || ''
-    categoryList.value = state.list || []
-    
-    // 恢复页面状态
-    nextTick(() => {
-      setTimeout(() => {
-        window.scrollTo({
-          top: state.scrollPosition,
-          behavior: 'instant'
-        })
-        localStorage.removeItem('matterListState')
-      }, 100)
-    })
-  } else {
-    await fetchCategoryList()
-  }
-  
-  window.addEventListener('scroll', handleScroll)
+watch(() => route.query.categoryId, () => {
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  matterList.value = []
+  fetchMatterList()
 })
 </script>
 

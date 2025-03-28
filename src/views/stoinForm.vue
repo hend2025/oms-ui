@@ -1,9 +1,9 @@
 <template>
   <div class="form-edit">
     <div class="header">
-      <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>{{ stoinId ? '编辑入库' : '新增入库' }}</h1>
-      <div style="width: 20px"></div>
+      <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
+      <h1>{{ isEdit ? '修改' : '新增' }}</h1>
+      <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 
     <div class="form-container">
@@ -13,127 +13,212 @@
         :rules="rules"
         label-width="80px"
       >
-        <el-form-item label="物料名称" prop="matterName">
-          <el-input v-model="formData.matterName" placeholder="请输入物料名称" />
-        </el-form-item>
-        <el-form-item label="入库日期" prop="stoinDate">
-          <el-date-picker
-            v-model="formData.stoinDate"
-            type="date"
-            placeholder="请选择入库日期"
-            style="width: 100%"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
-        <el-form-item label="入库数量" prop="stoinCnt">
-          <el-input-number 
-            v-model="formData.stoinCnt" 
-            :min="1"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="单价" prop="price">
-          <el-input-number 
-            v-model="formData.price" 
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="所属机构" prop="orgId">
-          <el-select 
-            v-model="formData.orgId"
-            placeholder="请选择所属机构"
-            style="width: 100%"
-            @change="handleOrgChange"
-          >
-            <el-option
-              v-for="item in orgOptions"
-              :key="item.orgId"
-              :label="item.orgName"
-              :value="item.orgId"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
+      <el-form-item label="采购日期" prop="stoinDate" required>
+        <el-date-picker
+          v-model="formData.stoinDate"
+          type="date"
+          placeholder="请选择采购日期"
+          value-format="YYYY-MM-DD"
+          style="width: 100%"
+        />
+      </el-form-item>
 
-      <div class="form-footer">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
-      </div>
+      <el-form-item label="物料分类" prop="categoryName" required>
+          <div class="category-select" @click="handleCategoryClick">
+            <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
+            <span v-else class="placeholder">请选择物料分类</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="物料名称" prop="matterName" required>
+          <div class="category-select" @click="handleMatterClick">
+            <span v-if="formData.matterName">{{ formData.matterName }}</span>
+            <span v-else class="placeholder">请选择物料名称</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="供货商" prop="orgName">
+          <div class="category-select" @click="handleOrgClick">
+            <span v-if="formData.orgName">{{ formData.orgName }}</span>
+            <span v-else class="placeholder">请选择供货商</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="单价" prop="price">
+          <el-input v-model="formData.price" placeholder="请输入单价" />
+        </el-form-item>
+
+        <el-form-item label="数量" prop="stoinCnt">
+          <el-input v-model="formData.stoinCnt" placeholder="请输入数量" />
+        </el-form-item>
+        
+        <el-form-item label="金额" prop="money" disabled>
+          <el-input v-model="formData.money" placeholder="请输入金额" />
+        </el-form-item>
+
+        <div class="form-footer">
+          <el-button type="primary" @click="handleSubmit">保存</el-button>
+        </div>
+      </el-form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
-import { getStoinDetail, saveStoin } from '../api/stoin'
-import { postRequest } from '../utils/api'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
+import { postRequest, getRequest } from "../utils/api"
+import { ElMessage, ElMessageBox } from 'element-plus'
+import dayjs from 'dayjs'
 
-const route = useRoute()
 const router = useRouter()
-const formRef = ref()
-const stoinId = route.params.id
+const route = useRoute()
+const formRef = ref(null)
+const isEdit = ref(false)
 
 const formData = reactive({
-  stoinId: undefined,
+  stoinId: '',
+  matterId: '',
   matterName: '',
-  stoinDate: '',
-  stoinCnt: 1,
-  price: 0,
-  orgId: undefined,
+  matterCode: '',
+  categoryId: '',
+  categoryName: '',
+  matterPara: '', 
+  stoinDate: new Date().toISOString().split('T')[0],
+  stoinCnt: '',
+  price: '',
+  money: '',
+  orgId: '',
   orgName: '',
-  orgCode: ''
+  orgCode: '',
 })
 
-const orgOptions = ref([])
-
 const rules = {
-  matterName: [{ required: true, message: '请输入物料名称' }],
-  stoinDate: [{ required: true, message: '请选择入库日期' }],
-  stoinCnt: [{ required: true, message: '请输入入库数量' }],
-  price: [{ required: true, message: '请输入单价' }],
-  orgId: [{ required: true, message: '请选择所属机构' }]
+  stoinDate: [
+    { required: true, message: '请选择采购日期', trigger: 'change' }
+  ],
+  categoryName: [
+    { required: true, message: '请选择物料分类', trigger: 'change' }
+  ],
+  matterName: [
+    { required: true, message: '请选择物料名称', trigger: 'change' }
+  ],
+  orgName: [
+    { required: true, message: '请选择供货商', trigger: 'change' }
+  ],
+  price: [
+    { required: true, message: '请输入单价', trigger: 'blur' }
+  ],
+  stoinCnt: [
+    { required: true, message: '请输入数量', trigger: 'blur' }
+  ],
+  money: [
+    { required: true, message: '请输入金额', trigger: 'blur' }
+  ]
 }
 
-const loadOrgOptions = async () => {
-  try {
-    const resp = await postRequest('/version/ht/org/list', { pageSize: 100 })
-    if (resp?.data?.code === 0 && resp.data.data) {
-      orgOptions.value = resp.data.data.records || []
+const handleCategoryClick = () => {
+  localStorage.setItem('tempFormData', JSON.stringify(formData))
+  router.push({
+    path: '/category',
+    query: { select: 'true', from: 'matter' }
+  })
+}
+
+const handleMatterClick = () => {
+  localStorage.setItem('tempFormData', JSON.stringify(formData))
+  router.push({
+    path: '/matter', 
+    query: { select: 'true', from: 'stoin', categoryId: formData.categoryId }
+  })
+}
+
+const handleOrgClick = () => {
+  localStorage.setItem('tempFormData', JSON.stringify(formData))
+  router.push({
+    path: '/org',
+    query: { select: 'true', from: 'stoin' }
+  })
+}
+
+onMounted(async () => {
+  const id = route.query.id
+  if (id) {
+    isEdit.value = true
+    try {
+      const resp = await getRequest(`/version/ht/matterStoin/info/${id}`)
+      if (resp?.data?.code === 0) {
+        const data = resp.data.data
+        data.stoinDate = data.stoinDate ? dayjs(data.stoinDate).format('YYYY-MM-DD') : ''
+        Object.assign(formData, data)
+      }
+    } catch (error) {
+      console.error('获取详情失败:', error)
     }
-  } catch (error) {
-    ElMessage.error('加载机构列表失败')
   }
-}
 
-const handleOrgChange = (orgId) => {
-  const org = orgOptions.value.find(item => item.orgId === orgId)
-  if (org) {
+  const tempFormData = localStorage.getItem('tempFormData')
+  if (tempFormData) {
+    const savedData = JSON.parse(tempFormData)
+    Object.assign(formData, savedData)
+    isEdit.value = !!savedData.stoinId
+    localStorage.removeItem('tempFormData')
+  }
+
+  const selectedCategory = localStorage.getItem('selectedCategory')
+  if (selectedCategory) {
+    const category = JSON.parse(selectedCategory)
+    formData.categoryId = category.categoryId
+    formData.categoryName = category.categoryName  
+    localStorage.removeItem('selectedCategory')
+    return
+  }
+
+  const selectedMatter = localStorage.getItem('selectedMatter')
+  if (selectedMatter) {
+    const matter = JSON.parse(selectedMatter)
+    formData.matterId = matter.matterId
+    formData.matterName = matter.matterName
+    formData.matterCode = matter.matterCode
+    formData.matterPara = matter.matterPara
+    localStorage.removeItem('selectedMatter')
+    return
+  }
+
+  const selectedOrg = localStorage.getItem('selectedOrg')
+  if (selectedOrg) {
+    const org = JSON.parse(selectedOrg)
+    formData.orgId = org.orgId
     formData.orgName = org.orgName
     formData.orgCode = org.orgCode
+    localStorage.removeItem('selectedOrg')
   }
-}
+  
+})
 
 const handleSubmit = async () => {
   await formRef.value.validate()
   try {
-    await saveStoin(formData)
-    ElMessage.success('保存成功')
-    router.back()
+    const params = {
+      ...formData
+    }
+    const resp = await postRequest('/version/ht/matterStoin/save', params)
+    if (resp?.data?.code === 0) {
+      ElMessage.success('保存成功')
+      router.back()
+    } else {
+      throw new Error(resp?.data?.message || '保存失败')
+    }
   } catch (error) {
-    ElMessage.error('保存失败')
+    ElMessage.error(error.message || '保存失败')
   }
 }
-
-const handleBack = () => {
-  router.back()
-}
-
-loadOrgOptions()
 </script>
+
 
 <style scoped>
 .form-edit {
@@ -148,7 +233,7 @@ loadOrgOptions()
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: fixed;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   top: 0;         
   left: 0;       
   right: 0;       
@@ -156,25 +241,64 @@ loadOrgOptions()
 }
 
 .header h1 {
-  margin: 0;
+  margin: 0 auto;
   font-size: 18px;
   font-weight: 500;
 }
 
-.header-icon {
+.back-icon {
   font-size: 20px;
   cursor: pointer;
+  position: absolute;
 }
 
 .form-container {
-  padding: 20px 15px;
+  padding: 20px 15px 10px 10px;
   background: #fff;
-  margin: 70px 16px 16px;
+  margin: 10px;
   border-radius: 8px;
 }
 
 .form-footer {
   margin-top: 30px;
   text-align: center;
+}
+
+.delete-icon {
+  font-size: 20px;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  color: #fff;
+}
+
+.category-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background-color: var(--el-input-bg-color, #fff);
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  height: 42px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: var(--el-font-size-base);
+}
+
+:deep(.el-input__wrapper) {
+  height: 42px;
+}
+
+:deep(.el-input__inner) {
+  height: 42px;
+  line-height: 42px;
+  font-size: 14px;
+}
+
+.category-select .placeholder {
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
 }
 </style>

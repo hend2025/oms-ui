@@ -2,7 +2,7 @@
   <div class="form-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改' : '新增' }}机构</h1>
+      <h1>{{ isEdit ? '修改' : '新增' }}客户</h1>
       <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 
@@ -13,15 +13,24 @@
         :rules="rules"
         label-width="80px"
       >
-        <el-form-item label="机构名称" prop="orgName" required>
-          <el-input v-model="formData.orgName" placeholder="请输入机构名称" />
+              
+      <el-form-item label="客户类型" prop="orgType" required>
+          <el-select v-model="formData.orgType" placeholder="请选择客户类型">
+            <el-option label="供应商" value="1" />
+            <el-option label="销售商" value="2" />
+            <el-option label="供应商和销售商" value="3" />
+          </el-select>
         </el-form-item>
-        
-        <el-form-item label="机构编码" prop="orgCode">
-          <el-input v-model="formData.orgCode" placeholder="请输入机构编码" />
+
+        <el-form-item label="客户名称" prop="orgName" required>
+          <el-input v-model="formData.orgName" placeholder="请输入客户名称" />
+        </el-form-item>
+
+        <el-form-item label="客户编码" prop="orgCode">
+          <el-input v-model="formData.orgCode" placeholder="请输入客户编码" />
         </el-form-item>
                 
-        <el-form-item label="联系人" prop="conerName">
+        <el-form-item label="联 系 人" prop="conerName">
           <el-input v-model="formData.conerName" placeholder="请输入联系人" />
         </el-form-item>
 
@@ -29,8 +38,8 @@
           <el-input v-model="formData.conerTel" placeholder="请输入联系电话" />
         </el-form-item>
 
-        <el-form-item label="机构地址" prop="addr">
-          <el-input v-model="formData.addr" placeholder="请输入机构地址" />
+        <el-form-item label="客户地址" prop="addr">
+          <el-input v-model="formData.addr" placeholder="请输入客户地址" />
         </el-form-item>
 
         <div class="form-footer">
@@ -56,6 +65,7 @@ const isEdit = ref(false)
 const formData = reactive({
   orgId: '',
   orgName: '',
+  orgType: '',
   orgCode: '',
   conerName: '',
   conerTel: '',
@@ -64,7 +74,10 @@ const formData = reactive({
 
 const rules = {
   orgName: [
-    { required: true, message: '请输入机构名称', trigger: 'blur' }
+    { required: true, message: '请输入客户名称', trigger: 'blur' }
+  ],
+  orgType: [
+    { required: true, message: '请选择客户类型', trigger: 'change' }
   ]
 }
 
@@ -106,7 +119,7 @@ const handleSubmit = async () => {
 
 const handleDelete = async () => {
   try {
-    await ElMessageBox.confirm('确认删除该机构吗？', '提示', {
+    await ElMessageBox.confirm('确认删除该客户吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -187,5 +200,12 @@ const handleDelete = async () => {
   line-height: 42px;
   font-size: 14px; 
 }
- 
+
+:deep(.el-select) {
+  width: 100%;
+}
+
+:deep(.el-select__wrapper) {
+  height: 42px;
+}
 </style>
