@@ -2,7 +2,7 @@
   <div class="category">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>基础控件</h1>
+      <h1>页面实例</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -131,11 +131,11 @@ const handleBack = () => {
 }
 
 const handleAdd = () => {
-  router.push('/matterForm')  // 修改为正确的路由路径
+  router.push('/matterForm')  
 }
 
 const handleEdit = (item) => {
-  router.push(`/matterForm?id=${item.matterId}`)  // 修改为正确的路由路径
+  router.push(`/matterForm?id=${item.matterId}`)  
 }
 </script>
 

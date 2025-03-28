@@ -2,7 +2,7 @@
   <div class="category-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改分类' : '新增分类' }}</h1>
+      <h1>{{ isEdit ? '修改' : '新增' }}</h1>
       <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 

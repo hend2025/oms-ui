@@ -9,9 +9,7 @@
 
     <div class="function-icons">
       <div class="icon">
-        <router-link to="/purchase">
           <img src="../assets/hxjl.png" />
-        </router-link>  
           <p>日常查床</p>
       </div>
       <div class="icon">
@@ -44,8 +42,6 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Goods } from '@element-plus/icons-vue'
-
 const router = useRouter()
 </script>
 

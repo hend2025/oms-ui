@@ -1,22 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import Purchase from '../views/Purchase.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
-  },
-  {
-    path: '/purchase',
-    name: 'Purchase',
-    component: Purchase
-  },
-  {
-    path: '/purchase/detail',
-    name: 'PurchaseDetail',
-    component: () => import('../views/PurchaseDetail.vue')
+    component: () => import('../views/Home.vue')
   },
   {
     path: '/category',
@@ -32,17 +20,11 @@ const routes = [
     path: '/matter',
     name: 'Matter',
     component: () => import('../views/matter.vue'),
-    meta: {
-      title: '物料品类'
-    }
   },
   {
     path: '/matterForm',
     name: 'MatterForm',
     component: () => import('../views/matterForm.vue'),
-    meta: {
-      title: '物料表单'
-    }
   }
 ]
 
