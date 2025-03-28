@@ -25,6 +25,16 @@ const routes = [
     path: '/matterForm',
     name: 'MatterForm',
     component: () => import('../views/matterForm.vue'),
+  },
+  {
+    path: '/org',
+    name: 'org',
+    component: () => import('../views/org.vue')
+  },
+  {
+    path: '/orgForm',
+    name: 'orgForm',
+    component: () => import('../views/orgForm.vue')
   }
 ]
 

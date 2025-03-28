@@ -1,5 +1,5 @@
 <template>
-  <div class="category-edit">
+  <div class="form-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
       <h1>{{ isEdit ? '修改' : '新增' }}</h1>
@@ -111,7 +111,7 @@ const handleDelete = () => {
 </script>
 
 <style scoped>
-.category-edit {
+.form-edit {
   min-height: 100vh;
   background-color: #f5f7fa;
 }

@@ -36,6 +36,12 @@
         </router-link>
         <p>基础控件</p>
       </div>
+      <div class="icon">
+        <router-link to="/org">
+           <img src="../assets/hxjl.png" />
+        </router-link>
+        <p>机构管理</p>
+      </div>
     </div>
   </div>
 </template>
@@ -44,7 +50,6 @@
 import { useRouter } from 'vue-router'
 const router = useRouter()
 </script>
-
 <style scoped>
 
 body {

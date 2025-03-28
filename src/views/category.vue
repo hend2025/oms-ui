@@ -1,12 +1,12 @@
 <template>
-  <div class="category">
+  <div class="page-container">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
       <h1>{{ currentTitle }}</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
-    <div class="search-bar">
+    <div class="list-area">
       <el-input
         v-model="searchKey"
         placeholder="请输入搜索关键词"
@@ -192,7 +192,7 @@ const handleAdd = () => {
 </script>
 
 <style scoped>
-.category {
+.page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
@@ -212,7 +212,7 @@ const handleAdd = () => {
   z-index: 100;   
 }
 
-.search-bar {
+.list-area {
   padding: 16px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
@@ -235,7 +235,7 @@ const handleAdd = () => {
   transform: scale(1.1);
 }
 
-.search-bar {
+.list-area {
   padding: 16px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
