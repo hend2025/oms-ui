@@ -52,18 +52,18 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
 import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router' 
 import { postRequest } from "../utils/api"
 import { throttle } from 'lodash-es'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const route = useRoute()  
+const route = useRoute() 
 
 const searchKey = ref('')
 const categoryList = ref([])
 const navigationStack = ref([])
-const currentPcode = ref('0')
+const currentPcode = ref(0)
 const currentTitle = computed(() => navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '分类维护')
 
 const pageState = reactive({
@@ -74,10 +74,10 @@ const pageState = reactive({
   loading: false
 })
 
-const fetchCategoryList = async (pcode = '0', itemName = '') => {
+const fetchCategoryList = async (pcode = 0, itemName = '') => {
   if (pageState.loading || !pageState.hasMore) return
   currentPcode.value = pcode
-  if (pcode !== '0' && itemName) {
+  if (pcode !== 0 && itemName) {
     navigationStack.value.push({ pcode, name: itemName })
   }
   try {
@@ -131,6 +131,9 @@ watch(searchKey, () => {
   pageState.pageNum = 1
   pageState.hasMore = true
   categoryList.value = []
+  // 清空导航栈，回到顶级
+  // navigationStack.value = []
+  // currentPcode.value = 0
   fetchCategoryList(currentPcode.value)
 })
 
@@ -141,21 +144,25 @@ const handleBack = () => {
     pageState.pageNum = 1
     pageState.hasMore = true
     categoryList.value = []
-    fetchCategoryList(prevItem ? prevItem.pcode : '0')
+    fetchCategoryList(prevItem ? prevItem.pcode : 0)
   } else {
     router.back()
   }
 }
 
 const handleViewSub = (item) => {
+  // 如果是从物料表单页面跳转来的选择模式
   if (route.query.select === 'true' && route.query.from === 'matter') {
     if (item.childNum === 0) {
+      // 选中叶子节点，返回物料表单页面
       router.back()
+      // 通过 localStorage 临时存储所选分类信息
       localStorage.setItem('selectedCategory', JSON.stringify({
         categoryId: item.categoryId,
         categoryName: item.categoryName
       }))
     } else {
+      // 非叶子节点，继续浏览子分类
       searchKey.value = '' 
       pageState.pageNum = 1
       pageState.hasMore = true
@@ -163,6 +170,7 @@ const handleViewSub = (item) => {
       fetchCategoryList(item.categoryId, item.categoryName)
     }
   } else {
+    // 普通浏览模式
     if (item.childNum === 0) {
       ElMessage.warning('该分类下没有子分类')
       return

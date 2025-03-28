@@ -2,7 +2,7 @@
   <div class="category-edit">
     <div class="header">
       <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改物料' : '新增物料' }}</h1>
+      <h1>{{ isEdit ? '修改' : '新增' }}</h1>
       <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
     </div>
 
@@ -11,9 +11,9 @@
         ref="formRef"
         :model="formData"
         :rules="rules"
-        label-width="80px"
+        label-width="60px"
       >
-      <el-form-item label="分类名称" prop="categoryName" required>
+      <el-form-item label="分类" prop="categoryName" required>
           <div class="category-select" @click="handleCategoryClick">
             <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
             <span v-else class="placeholder">请选择分类</span>
@@ -21,28 +21,28 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="物料名称" prop="matterName" required>
-          <el-input v-model="formData.matterName" placeholder="请输入物料名称" />
+        <el-form-item label="名称" prop="matterName" required>
+          <el-input v-model="formData.matterName" placeholder="请输入名称" />
         </el-form-item>
         
-        <el-form-item label="物料编码" prop="matterCode">
-          <el-input v-model="formData.matterCode" placeholder="请输入物料编码" />
+        <el-form-item label="编码" prop="matterCode">
+          <el-input v-model="formData.matterCode" placeholder="请输入编码" />
         </el-form-item>
                 
-        <el-form-item label="物料别名" prop="aliasName">
-          <el-input v-model="formData.aliasName" placeholder="请输入物料别名" />
+        <el-form-item label="别名" prop="aliasName">
+          <el-input v-model="formData.aliasName" placeholder="请输入别名" />
         </el-form-item>
 
-        <el-form-item label="物料拼音" prop="pinyin">
-          <el-input v-model="formData.pinyin" placeholder="请输入物料拼音" />
+        <el-form-item label="首拼" prop="pinyin">
+          <el-input v-model="formData.pinyin" placeholder="请输入首拼" />
         </el-form-item>
 
-        <el-form-item label="物料参数" prop="param">
-          <el-input v-model="formData.param" placeholder="请输入物料参数" />
+        <el-form-item label="参数" prop="param">
+          <el-input v-model="formData.param" placeholder="请输入参数" />
         </el-form-item>
 
         <div class="form-footer">
-          <el-button type="primary" @click="handleSave">保存</el-button>
+          <el-button type="primary" @click="handleSubmit">保存</el-button>
         </div>
       </el-form>
     </div>
@@ -55,7 +55,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
 import { postRequest,getRequest } from "../utils/api"
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -111,7 +111,7 @@ onMounted(async () => {
         Object.assign(formData, resp.data.data)
       }
     } catch (error) {
-      console.error('获取物料详情失败:', error)
+      console.error('获取详情失败:', error)
     }
   }
 })
@@ -121,7 +121,7 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const url = isEdit.value ? '/version/ht/matter/update' : '/version/ht/matter/add'
+        const url = isEdit.value ? '/version/ht/matter/update' : '/version/ht/matter/save'
         const resp = await postRequest(url, formData)
         if (resp?.data?.code === 0) {
           ElMessage.success('保存成功')
@@ -133,18 +133,34 @@ const handleSubmit = async () => {
     }
   })
 }
-
-const handleBack = () => {
-  router.back()
-}
-
+ 
 const rules = {
-  categoryId: [
-    { required: true, message: '请选择分类编码', trigger: 'change' }
+  categoryName: [
+    { required: true, message: '请选择分类', trigger: 'change' }
   ],
   matterName: [
-    { required: true, message: '请输入物料名称', trigger: 'blur' }
+    { required: true, message: '请输入名称', trigger: 'blur' }
   ]
+}
+
+const handleDelete = async () => {
+  try {
+    await ElMessageBox.confirm('确认删除该记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    const resp = await getRequest(`/version/ht/matter/delete/${formData.matterId}`)
+    if (resp?.data?.code === 0) {
+      ElMessage.success('删除成功')
+      router.back()
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+    }
+  }
 }
 </script>
 

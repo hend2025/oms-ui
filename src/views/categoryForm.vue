@@ -28,12 +28,12 @@
           <el-input v-model="formData.subCount" disabled />
         </el-form-item>
 
-        <el-form-item label="规格参数" v-if="formData.ctype === '2'">
+        <el-form-item label="参数" v-if="formData.ctype === '2'">
           <el-input
             v-model="formData.para"
             type="textarea"
             :rows="3"
-            placeholder="请输入规格参数"
+            placeholder="请输入参数"
           />
         </el-form-item>
 
@@ -85,7 +85,7 @@ const handleSave = () => {
   }
   
   if (formData.value.ctype === '2' && !formData.value.para) {
-    ElMessage.warning('请输入规格参数')
+    ElMessage.warning('请输入参数')
     return
   }
 
