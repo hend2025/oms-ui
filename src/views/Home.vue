@@ -21,7 +21,9 @@
         <p>签到签退</p>
       </div>
       <div class="icon">
-        <img src="../assets/hxjl.png" />
+        <router-link to="stoin">
+           <img src="../assets/hxjl.png" />
+        </router-link>
         <p>异常申诉</p>
       </div>
       <div class="icon">

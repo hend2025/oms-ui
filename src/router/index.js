@@ -35,6 +35,16 @@ const routes = [
     path: '/orgForm',
     name: 'orgForm',
     component: () => import('../views/orgForm.vue')
+  },
+  {
+    path: '/stoin',
+    name: 'stoin',
+    component: () => import('../views/stoin.vue')
+  },
+  {
+    path: '/stoin/form/:id?',
+    name: 'stoinForm',
+    component: () => import('../views/stoinForm.vue')
   }
 ]
 
