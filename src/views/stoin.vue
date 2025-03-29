@@ -26,7 +26,7 @@
         @click="handleEdit(item)"
       >
         <div class="item-header">
-          <span class="item-title">{{ item.matterName }}</span>
+          <span class="item-title">{{ item.categoryName }}</span>
           <span class="item-code">{{ formatDate(item.stoinDate) }}</span>
         </div>
         <div class="item-info">
@@ -56,7 +56,8 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
-import { getStoinList } from '../api/stoin'
+import { postRequest, getRequest } from "../utils/api"
+
 import dayjs from 'dayjs' 
 
 const router = useRouter()
@@ -90,7 +91,7 @@ const loadData = async (isRefresh = false) => {
       searchKey: searchKey.value
     }
     
-    const resp = await getStoinList(params)
+    const resp = await getRequest('/version/ht/matterStoin/list', params)
     if (resp?.data?.code === 0 && resp.data.data) {
       const { records = [], total = 0 } = resp.data.data
       if (isRefresh) {

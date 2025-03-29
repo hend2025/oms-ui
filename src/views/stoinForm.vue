@@ -23,23 +23,7 @@
         />
       </el-form-item>
 
-      <el-form-item label="物料分类" prop="categoryName" required>
-          <div class="category-select" @click="handleCategoryClick">
-            <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
-            <span v-else class="placeholder">请选择物料分类</span>
-            <el-icon><ArrowRight /></el-icon>
-          </div>
-        </el-form-item>
-
-        <el-form-item label="物料名称" prop="matterName" required>
-          <div class="category-select" @click="handleMatterClick">
-            <span v-if="formData.matterName">{{ formData.matterName }}</span>
-            <span v-else class="placeholder">请选择物料名称</span>
-            <el-icon><ArrowRight /></el-icon>
-          </div>
-        </el-form-item>
-
-        <el-form-item label="供货商" prop="orgName">
+      <el-form-item label="供货商" prop="orgName">
           <div class="category-select" @click="handleOrgClick">
             <span v-if="formData.orgName">{{ formData.orgName }}</span>
             <span v-else class="placeholder">请选择供货商</span>
@@ -47,16 +31,42 @@
           </div>
         </el-form-item>
 
+      <el-form-item label="物料名称" prop="categoryName" required>
+          <div class="category-select" @click="handleCategoryClick">
+            <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
+            <span v-else class="placeholder">请选择物料分类</span>
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </el-form-item>
+
         <el-form-item label="单价" prop="price">
-          <el-input v-model="formData.price" placeholder="请输入单价" />
+          <el-input 
+            v-model="formData.price" 
+            type="number"
+            @input="handlePriceOrCountChange"
+            placeholder="请输入单价" />
         </el-form-item>
 
         <el-form-item label="数量" prop="stoinCnt">
-          <el-input v-model="formData.stoinCnt" placeholder="请输入数量" />
+          <el-input 
+            v-model="formData.stoinCnt" 
+            type="number"
+            @input="handlePriceOrCountChange"
+            placeholder="请输入数量" />
         </el-form-item>
         
-        <el-form-item label="金额" prop="money" disabled>
-          <el-input v-model="formData.money" placeholder="请输入金额" />
+        <el-form-item label="金额" prop="money">
+          <el-input 
+            v-model="formData.money" 
+            type="number"
+            placeholder="请输入金额" />
+        </el-form-item>
+
+        <el-form-item label="已付" prop="payMoney" disabled>
+          <el-input 
+            v-model="formData.payMoney" 
+            type="number"
+            placeholder="请输入已付" />
         </el-form-item>
 
         <div class="form-footer">
@@ -82,16 +92,13 @@ const isEdit = ref(false)
 
 const formData = reactive({
   stoinId: '',
-  matterId: '',
-  matterName: '',
-  matterCode: '',
-  categoryId: '',
+  categoryId: '', 
   categoryName: '',
-  matterPara: '', 
   stoinDate: new Date().toISOString().split('T')[0],
   stoinCnt: '',
   price: '',
   money: '',
+  payMoney: '0.00',
   orgId: '',
   orgName: '',
   orgCode: '',
@@ -102,9 +109,6 @@ const rules = {
     { required: true, message: '请选择采购日期', trigger: 'change' }
   ],
   categoryName: [
-    { required: true, message: '请选择物料分类', trigger: 'change' }
-  ],
-  matterName: [
     { required: true, message: '请选择物料名称', trigger: 'change' }
   ],
   orgName: [
@@ -126,14 +130,6 @@ const handleCategoryClick = () => {
   router.push({
     path: '/category',
     query: { select: 'true', from: 'matter' }
-  })
-}
-
-const handleMatterClick = () => {
-  localStorage.setItem('tempFormData', JSON.stringify(formData))
-  router.push({
-    path: '/matter', 
-    query: { select: 'true', from: 'stoin', categoryId: formData.categoryId }
   })
 }
 
@@ -181,10 +177,7 @@ onMounted(async () => {
   const selectedMatter = localStorage.getItem('selectedMatter')
   if (selectedMatter) {
     const matter = JSON.parse(selectedMatter)
-    formData.matterId = matter.matterId
-    formData.matterName = matter.matterName
-    formData.matterCode = matter.matterCode
-    formData.matterPara = matter.matterPara
+    formData.categoryName = matter.categoryName
     localStorage.removeItem('selectedMatter')
     return
   }
@@ -217,6 +210,37 @@ const handleSubmit = async () => {
     ElMessage.error(error.message || '保存失败')
   }
 }
+
+const handleDelete = () => {
+  ElMessageBox.confirm('确认删除该采购记录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const resp = await  getRequest(`/version/ht/matterStoin/delete/${formData.stoinId}`)
+      if (resp?.data?.code === 0) {
+        ElMessage.success('删除成功')
+        router.back()
+      } else {
+        throw new Error(resp?.data?.message || '删除失败')
+      }
+    } catch (error) {
+      console.error('删除失败:', error)
+      ElMessage.error(error.message || '删除失败')
+    }
+  }).catch(() => {
+    // 取消删除操作
+  })
+}
+
+const handlePriceOrCountChange = () => {
+  if (formData.price && formData.stoinCnt) {
+    const calculatedMoney = (parseFloat(formData.price) * parseFloat(formData.stoinCnt)).toFixed(2)
+    formData.money = calculatedMoney
+  }
+}
+
 </script>
 
 
@@ -302,3 +326,5 @@ const handleSubmit = async () => {
   font-size: 14px;
 }
 </style>
+
+ 

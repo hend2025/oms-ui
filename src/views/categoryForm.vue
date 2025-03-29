@@ -85,7 +85,8 @@ const handleSave = async () => {
 
     const params = {
       ...formData.value,
-      parentId: route.query.parentId || 0
+      parentId: route.query.parentId || 0,
+      busiType: formData.value.busiType || route.query.busiType || '1'  // 确保保存时也带上业务类型
     }
 
     const url = isEdit.value ? '/version/ht/category/update' : '/version/ht/category/save'
@@ -137,9 +138,10 @@ onMounted(() => {
   if (isEdit.value) {
     fetchCategoryDetail()
   } else {
-    // 新增时设置父级信息
+    // 新增时设置父级信息和业务类型
     formData.value.parentId = route.query.parentId
     formData.value.parentName = route.query.parentName
+    formData.value.busiType = route.query.busiType || '1'  // 添加业务类型设置
   }
 })
 

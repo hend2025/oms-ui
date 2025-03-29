@@ -22,6 +22,7 @@
     <div class="list-area">
         <div v-for="item in categoryList" 
              :key="item.categoryId" 
+             :data-id="item.categoryId"
              class="list-item"
              @touchstart="handleTouchStart(item)"
              @touchend="handleTouchEnd">
@@ -58,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'  
+import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'  
 import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
 import { useRouter, useRoute } from 'vue-router' 
 import { postRequest } from "../utils/api"
@@ -130,40 +131,13 @@ const handleScroll = throttle(() => {
   }
 }, 200)
 
-onMounted(() => {
-  fetchCategoryList()
-  window.addEventListener('scroll', handleScroll)
+const currentScrollPosition = ref({
+  position: 0,
+  pageNum: 1,
+  itemId: null
 })
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
-
-watch(searchKey, () => {
-  pageState.pageNum = 1
-  pageState.hasMore = true
-  categoryList.value = []
-  // 清空导航栈，回到顶级
-  // navigationStack.value = []
-  // currentPcode.value = 0
-  fetchCategoryList(currentPcode.value)
-})
-
-const handleBack = () => {
-  if (navigationStack.value.length > 0) {
-    navigationStack.value.pop()
-    const prevItem = navigationStack.value[navigationStack.value.length - 1]
-    pageState.pageNum = 1
-    pageState.hasMore = true
-    categoryList.value = []
-    fetchCategoryList(prevItem ? prevItem.pcode : 0)
-  } else {
-    router.back()
-  }
-}
 
 const handleViewSub = (item) => {
-  // 如果是从物料表单页面跳转来的选择模式
   if (route.query.select === 'true' && route.query.from === 'matter') {
     if (item.childNum === 0) {
       // 选中叶子节点，返回物料表单页面
@@ -182,57 +156,105 @@ const handleViewSub = (item) => {
       fetchCategoryList(item.categoryId, item.categoryName)
     }
   } else {
-    searchKey.value = '' 
-    pageState.pageNum = 1
-    pageState.hasMore = true
-    categoryList.value = []
-    fetchCategoryList(item.categoryId, item.categoryName)
+    if (item.childNum === 0) {
+      currentScrollPosition.value = {
+        position: window.pageYOffset,
+        pageNum: pageState.pageNum,
+        itemId: item.categoryId
+      }
+      localStorage.setItem('categoryScrollPosition', JSON.stringify(currentScrollPosition.value))
+      router.push({
+        path: '/categoryForm',
+        query: { 
+          type: 'edit',
+          id: item.categoryId,
+          name: item.categoryName,
+          parentId: currentPcode.value,
+          busiType: route.query.busiType || '1'
+        }
+      })
+    } else {
+      searchKey.value = '' 
+      pageState.pageNum = 1
+      pageState.hasMore = true
+      categoryList.value = []
+      fetchCategoryList(item.categoryId, item.categoryName)
+    }
   }
 }
 
+// 将 handleAdd 移到这里，作为独立的函数
 const handleAdd = () => {
+  const busiType = route.query.busiType || '1'
   router.push({
     path: '/categoryForm',
     query: { 
       type: 'add',
       parentId: currentPcode.value,
-      parentName: navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '顶级分类'
+      parentName: navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '顶级分类',
+      busiType
     }
   })
 }
 
-// 长按计时器
-const pressTimer = ref(null)
-
-// 长按开始处理
-const handleTouchStart = (item) => {
-  pressTimer.value = setTimeout(() => {
-    router.push({
-      path: '/categoryForm',
-      query: { 
-        type: 'edit',
-        id: item.categoryId,
-        name: item.categoryName,
-        parentId: currentPcode.value
+const handleBack = () => {
+  if (navigationStack.value.length > 0) {
+    navigationStack.value.pop()
+    const prevItem = navigationStack.value[navigationStack.value.length - 1]
+    const savedPosition = localStorage.getItem('categoryScrollPosition')
+    if (savedPosition) {
+      const { position, pageNum, itemId } = JSON.parse(savedPosition)
+      pageState.pageNum = 1
+      pageState.hasMore = true
+      categoryList.value = []
+      const loadAndScroll = async () => {
+        while (pageState.hasMore && pageState.pageNum <= pageNum) {
+          await fetchCategoryList(prevItem ? prevItem.pcode : 0)
+        }
+        await nextTick()
+        const targetElement = document.querySelector(`[data-id="${itemId}"]`)
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'auto', block: 'center' })
+        } else {
+          window.scrollTo(0, position)
+        }
+        localStorage.removeItem('categoryScrollPosition')
       }
-    })
-  }, 800)
-}
-
-// 长按结束处理
-const handleTouchEnd = () => {
-  if (pressTimer.value) {
-    clearTimeout(pressTimer.value)
-    pressTimer.value = null
+      loadAndScroll()
+    } else {
+      pageState.pageNum = 1
+      pageState.hasMore = true
+      categoryList.value = []
+      fetchCategoryList(prevItem ? prevItem.pcode : 0)
+    }
+  } else {
+    router.back()
   }
 }
 
-// 组件卸载时清理定时器
-onUnmounted(() => {
-  if (pressTimer.value) {
-    clearTimeout(pressTimer.value)
+onMounted(() => {
+  const savedPosition = localStorage.getItem('categoryScrollPosition')
+  if (savedPosition) {
+    const { position, pageNum, itemId } = JSON.parse(savedPosition)
+    pageState.pageNum = 1
+    const loadAndScroll = async () => {
+      while (pageState.hasMore && pageState.pageNum <= pageNum) {
+        await fetchCategoryList(currentPcode.value)
+      }
+      await nextTick()
+      const targetElement = document.querySelector(`[data-id="${itemId}"]`)
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'auto', block: 'center' })
+      } else {
+        window.scrollTo(0, position)
+      }
+      localStorage.removeItem('categoryScrollPosition')
+    }
+    loadAndScroll()
+  } else {
+    fetchCategoryList()
   }
-  window.removeEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', handleScroll)
 })
 </script>
 
