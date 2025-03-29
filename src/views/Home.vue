@@ -8,7 +8,7 @@
     </div>
 
     <div class="function-icons">
-      <div class="icon">‘
+      <div class="icon">
         <router-link to="stoin">
           <img src="../assets/hxjl.png" />
         </router-link>

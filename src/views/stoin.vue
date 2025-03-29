@@ -30,8 +30,8 @@
           <span class="item-code">{{ formatDate(item.stoinDate) }}</span>
         </div>
         <div class="item-info">
-          <span>数量：{{ item.price }}</span>
-          <span>金额：{{ item.stoinCnt }}元</span>
+          <span>数量：{{ item.stoinCnt }}</span>
+          <span>金额：{{ item.money }}元</span>
         </div>
         <div class="item-info">
           <span>供货商：{{ item.orgName }}</span>
