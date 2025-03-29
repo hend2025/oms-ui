@@ -8,38 +8,38 @@
 
     <div class="form-container">
       <el-form :model="formData" label-width="80px">
-        <el-form-item label="上级">
+
+        <el-form-item label="节点类型" prop="nodeType" required>
+          <el-radio-group v-model="formData.nodeType">
+            <el-radio label="1">分类</el-radio>
+            <el-radio label="2">实体</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="上级节点" prop="parentName" required>
           <el-input v-model="formData.parentName" disabled />
         </el-form-item>
-
-        <div class="type-select" v-if="formData.subCount===0">
-          <span class="label">选择</span>
-          <el-radio-group v-model="formData.ctype">
-            <el-radio label="1">分类</el-radio>
-            <el-radio label="2">类型</el-radio>
-          </el-radio-group>
-        </div>
-
-        <el-form-item label="名称">
-          <el-input v-model="formData.name" placeholder="请输入名称" />
+                      
+        <el-form-item label="节点名称" prop="categoryName" required>
+          <el-input v-model="formData.categoryName" placeholder="请输入节点名称" />
         </el-form-item>
 
-        <el-form-item label="子类数量" v-if="formData.ctype === '1'">
-          <el-input v-model="formData.subCount" disabled />
+        <el-form-item label="规格参数" prop="param" >
+          <el-input v-model="formData.param" placeholder="请输入规格参数" />
         </el-form-item>
-
-        <el-form-item label="参数" v-if="formData.ctype === '2'">
-          <el-input
-            v-model="formData.para"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入参数"
-          />
+        
+        <el-form-item label="别名简称" prop="aliasName" >
+          <el-input v-model="formData.aliasName" placeholder="请输入别名简称" />
+        </el-form-item>
+        
+        <el-form-item label="拼音简称" prop="pinyin" >
+          <el-input v-model="formData.pinyin" placeholder="请输入拼音简称" />
         </el-form-item>
 
         <div class="form-footer">
           <el-button type="primary" @click="handleSave">保存</el-button>
         </div>
+
       </el-form>
     </div>
   </div>
@@ -50,6 +50,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { postRequest, getRequest } from "../utils/api"
 
 const router = useRouter()
 const route = useRoute()
@@ -57,56 +58,112 @@ const route = useRoute()
 const isEdit = computed(() => route.query.type === 'edit')
 
 const formData = ref({
-  ctype: '1',
-  name: '',
-  para: '',
-  parentName: '',
-  subCount: 0
+  categoryId: '',
+  categoryName: '',
+  categoryCode: '',
+  parentId: '',
+  parentName: '',  
+  nodeType: '',
+  busiType: '',
+  aliasName: '',
+  pinyin: '',
+  param: ''
 })
+
+// 添加保存方法
+const handleSave = async () => {
+  try {
+    // 表单验证
+    if (!formData.value.categoryName) {
+      ElMessage.warning('请输入节点名称')
+      return
+    }
+    if (!formData.value.nodeType) {
+      ElMessage.warning('请选择节点类型')
+      return
+    }
+
+    const params = {
+      ...formData.value,
+      parentId: route.query.parentId || 0
+    }
+
+    const url = isEdit.value ? '/version/ht/category/update' : '/version/ht/category/save'
+    const resp = await postRequest(url, params)
+
+    if (resp?.data?.code === 0) {
+      ElMessage.success(isEdit.value ? '修改成功' : '添加成功')
+      router.back()
+    } else {
+      throw new Error(resp?.data?.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('保存失败:', error)
+    ElMessage.error(error.message || '保存失败')
+  }
+}
+
+// 获取分类详情
+const fetchCategoryDetail = async () => {
+  if (!isEdit.value) return
+  try {
+    const id = route.query.id
+    const resp = await getRequest(`/version/ht/category/info/${id}`)
+    if (resp?.data?.code === 0) {
+      const detail = resp.data.data
+      formData.value = {
+        ...formData.value,
+        categoryId: detail.categoryId,
+        categoryName: detail.categoryName,
+        categoryCode: detail.categoryCode,
+        parentId: detail.parentId,
+        parentName: detail.parentName,
+        nodeType: detail.nodeType,
+        busiType: detail.busiType,
+        aliasName: detail.aliasName,
+        pinyin: detail.pinyin,
+        param: detail.param
+      }
+    } else {
+      ElMessage.error('获取分类详情失败')
+    }
+  } catch (error) {
+    console.error('获取分类详情失败:', error)
+    ElMessage.error('获取分类详情失败')
+  }
+}
 
 onMounted(() => {
   if (isEdit.value) {
-    formData.value = {
-      ctype: route.query.ctype || '1',
-      name: route.query.name || '',
-      para: route.query.para || '',
-      subCount: route.query.subCount || 0,
-      parentName: route.query.parentName || '顶级' 
-    }
+    fetchCategoryDetail()
   } else {
-    formData.value.parentName = '顶级'
+    // 新增时设置父级信息
+    formData.value.parentId = route.query.parentId
+    formData.value.parentName = route.query.parentName
   }
 })
- 
-const handleSave = () => {
-  if (!formData.value.name) {
-    ElMessage.warning('请输入名称')
-    return
-  }
-  
-  if (formData.value.ctype === '2' && !formData.value.para) {
-    ElMessage.warning('请输入参数')
-    return
-  }
-
-  console.log('保存数据：', formData.value)
-  ElMessage.success('保存成功')
-  router.back()
-}
 
 const handleDelete = () => {
-  ElMessageBox.confirm(
-    '确定要删除该分类吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
+  ElMessageBox.confirm('确认删除该分类吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const resp = await getRequest(`/version/ht/category/delete/${formData.value.categoryId}`)
+      if (resp?.data?.code === 0) {
+        ElMessage.success('删除成功')
+        router.back()
+      } else {
+        throw new Error(resp?.data?.message || '删除失败')
+      }
+    } catch (error) {
+      console.error('删除失败:', error)
+      ElMessage.error(error.message || '删除失败')
     }
-  ).then(() => {
-    ElMessage.success('删除成功')
-    router.back()
-  }).catch(() => {})
+  }).catch(() => {
+    // 取消删除操作
+  })
 }
 </script>
 

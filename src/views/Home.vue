@@ -27,22 +27,28 @@
         <p>财务对账</p>
       </div>
       <div class="icon">
-        <router-link to="matter">
-          <img src="../assets/hxjl.png" />
-        </router-link>   
-          <p>物料分类</p>
-      </div>
-      <div class="icon">
-        <router-link to="/category">
+        <router-link to="/category?busiType=1">
            <img src="../assets/hxjl.png" />
         </router-link>
-        <p>分类维护</p>
+        <p>物料种类</p>
+      </div>
+      <div class="icon">
+        <router-link to="/category?busiType=2">
+           <img src="../assets/hxjl.png" />
+        </router-link>
+        <p>产品种类</p>
       </div>
       <div class="icon">
         <router-link to="/org">
            <img src="../assets/hxjl.png" />
         </router-link>
         <p>客户管理</p>
+      </div>
+      <div class="icon">
+        <router-link to="/org">
+           <img src="../assets/hxjl.png" />
+        </router-link>
+        <p>账号设置</p>
       </div>
     </div>
   </div>

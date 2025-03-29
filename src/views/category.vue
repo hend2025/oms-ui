@@ -19,15 +19,23 @@
       </el-input>
     </div>
 
-    <div class="category-list">
+    <div class="list-area">
         <div v-for="item in categoryList" 
              :key="item.categoryId" 
-             class="category-item">
-          <div class="category-info" @click="handleViewSub(item)">   
-            <div class="category-name">
+             class="list-item"
+             @touchstart="handleTouchStart(item)"
+             @touchend="handleTouchEnd">
+          <div class="item-info" @click="handleViewSub(item)">   
+            <div class="item-name">
               <span class="name-text">{{ item.categoryName }}</span>
+              <span class="code-text" v-if=" item.categoryCode">{{ item.categoryCode }}</span>
+              <span class="code-text" v-else>{{ item.categoryId }}</span>
             </div>
-          </div>
+            <div class="item-name" v-if="!!item.aliasName || !!item.param">
+              <span class="code-text">{{ item.aliasName }}</span>
+              <span class="code-text">{{ item.param }}</span>
+            </div>
+          </div> 
           <div class="item-actions" v-if="item.childNum>0">
             <el-icon><ArrowRight /></el-icon>
           </div>
@@ -64,7 +72,10 @@ const searchKey = ref('')
 const categoryList = ref([])
 const navigationStack = ref([])
 const currentPcode = ref(0)
-const currentTitle = computed(() => navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '分类维护')
+const currentTitle = computed(() => {
+  const baseTitle = route.query.busiType === '2' ? '产品种类维护' : '物料种类维护'
+  return navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : baseTitle
+})
 
 const pageState = reactive({
   pageNum: 1,
@@ -86,7 +97,8 @@ const fetchCategoryList = async (pcode = 0, itemName = '') => {
       keyword: searchKey.value,
       parentId: pcode, 
       pageNum: pageState.pageNum,
-      pageSize: pageState.pageSize
+      pageSize: pageState.pageSize,
+      busiType: route.query.busiType || '1'
     }
     const resp = await postRequest('/version/ht/category/list', params)
     if (resp?.data?.code !== 0) {
@@ -170,11 +182,6 @@ const handleViewSub = (item) => {
       fetchCategoryList(item.categoryId, item.categoryName)
     }
   } else {
-    // 普通浏览模式
-    if (item.childNum === 0) {
-      ElMessage.warning('该分类下没有子分类')
-      return
-    }
     searchKey.value = '' 
     pageState.pageNum = 1
     pageState.hasMore = true
@@ -186,15 +193,54 @@ const handleViewSub = (item) => {
 const handleAdd = () => {
   router.push({
     path: '/categoryForm',
-    query: { type: 'add' }
+    query: { 
+      type: 'add',
+      parentId: currentPcode.value,
+      parentName: navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : '顶级分类'
+    }
   })
 }
+
+// 长按计时器
+const pressTimer = ref(null)
+
+// 长按开始处理
+const handleTouchStart = (item) => {
+  pressTimer.value = setTimeout(() => {
+    router.push({
+      path: '/categoryForm',
+      query: { 
+        type: 'edit',
+        id: item.categoryId,
+        name: item.categoryName,
+        parentId: currentPcode.value
+      }
+    })
+  }, 800)
+}
+
+// 长按结束处理
+const handleTouchEnd = () => {
+  if (pressTimer.value) {
+    clearTimeout(pressTimer.value)
+    pressTimer.value = null
+  }
+}
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (pressTimer.value) {
+    clearTimeout(pressTimer.value)
+  }
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
 .page-container {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f0f2f5;
+  padding: 65px 10px 10px;
 }
 
 .header {
@@ -204,124 +250,93 @@ const handleAdd = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   position: fixed; 
-  top: 0;         
-  left: 0;       
-  right: 0;       
+  top: 0; left: 0; right: 0;       
   z-index: 100;   
 }
 
-.list-area {
-  padding: 16px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  margin-top: 60px;   
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 500;
+.header h1 { 
+  margin: 0; 
+  font-size: 18px; 
+  font-weight: 500; 
 }
 
 .back-icon, .add-icon {
   font-size: 20px;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.back-icon:hover, .add-icon:hover {
-  transform: scale(1.1);
 }
 
 .list-area {
-  padding: 16px;
   background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  padding: 10px;
 }
 
-.category-list {
-  padding: 16px;
-}
-
-.category-item {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
+.list-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
-  cursor: pointer;
 }
 
-.category-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+.list-item:hover {
+  background-color: #fafafa;
 }
 
-.category-info {
+.item-info {
   flex: 1;
-  padding-right: 16px;
+  padding-right: 20px;
 }
 
-.category-name {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 8px;
+.item-name {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
 .name-text {
+  font-size: 15px;
   font-weight: 600;
-  color: #2c3e50;
+  color: #262626;
 }
 
-.sub-count {
+.code-text {
   font-size: 14px;
-  color: #909399;
-  margin-top: 4px;
+  font-weight: 500;
+  color: #8c8c8c;
 }
 
 .item-actions {
-  color: #409eff;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;  
-  transition: transform 0.2s;
-}
-
-.delete-icon {
-  color: #f56c6c;
+  color: #bfbfbf;
+  font-size: 16px;
+  transition: all 0.3s;
 }
 
 .item-actions:hover {
-  transform: translateX(4px);
+  color: #1890ff;
 }
 
 .loading-text,
-.no-more-text {
+.no-more-text,
+.empty-text {
   text-align: center;
-  color: #909399;
-  padding: 16px 0;
+  color: #8c8c8c;
+  padding: 16px;
   font-size: 14px;
 }
 
-.empty-text {
-  text-align: center;
-  padding: 40px 0;
-  color: #909399;
-  font-size: 14px;
+@keyframes rotating {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
 }
 
 .loading-text .loading {
-  animation: rotating 2s linear infinite;
+  animation: rotating 1.2s linear infinite;
 }
-
 </style>
 
