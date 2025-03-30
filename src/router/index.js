@@ -14,14 +14,6 @@ const routes = [
     component: () => import('../views/categoryForm.vue')
   },
   {
-    path: '/matter',
-    component: () => import('../views/matter.vue'),
-  },
-  {
-    path: '/matterForm',
-    component: () => import('../views/matterForm.vue'),
-  },
-  {
     path: '/org',
     component: () => import('../views/org.vue')
   },

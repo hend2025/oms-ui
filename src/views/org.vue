@@ -25,6 +25,7 @@
     <div class="list-area">
       <div v-for="item in orgList" 
         :key="item.orgId" 
+        :data-id="item.orgId"
         class="purchase-item"
         @click="handleEdit(item)"
       >
@@ -116,7 +117,6 @@ const handleBack = () => router.back()
 const handleAdd = () => router.push('/orgForm')
 
 const handleEdit = (item) => {
-  // 直接使用 route.query.select 进行判断
   if (route.query.select === 'true') {
     localStorage.setItem('selectedOrg', JSON.stringify({
       orgId: item.orgId,
@@ -125,11 +125,11 @@ const handleEdit = (item) => {
     }))
     router.back()
   } else {
+    // 保存当前状态，包括目标记录ID用于后续定位
     localStorage.setItem('orgListState', JSON.stringify({
+      targetId: item.orgId,
       pageNum: pageState.pageNum,
-      scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
-      keyword: searchKey.value,
-      list: orgList.value
+      keyword: searchKey.value
     }))
     router.push(`/orgForm?id=${item.orgId}`)
   }
@@ -139,18 +139,31 @@ onMounted(async () => {
   const savedState = localStorage.getItem('orgListState')
   if (savedState) {
     const state = JSON.parse(savedState)
-    pageState.pageNum = 1
     searchKey.value = state.keyword || ''
-    orgList.value = state.list || []
-    nextTick(() => {
-      setTimeout(() => {
-        window.scrollTo({
-          top: state.scrollPosition,
-          behavior: 'instant'
-        })
-        localStorage.removeItem('orgListState')
-      }, 100)
-    })
+    
+    // 分批加载数据直到找到目标记录
+    const loadUntilTarget = async (targetId) => {
+      while (true) {
+        await fetchOrgList()
+        if (orgList.value.some(item => item.orgId === targetId) || !pageState.hasMore) {
+          break
+        }
+      }
+      // 等待DOM更新后滚动到目标位置
+      nextTick(() => {
+        const targetElement = document.querySelector(`[data-id="${targetId}"]`)
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+        }
+      })
+    }
+
+    if (state.targetId) {
+      await loadUntilTarget(state.targetId)
+    } else {
+      await fetchOrgList()
+    }
+    localStorage.removeItem('orgListState')
   } else {
     await fetchOrgList()
   }
