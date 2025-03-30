@@ -13,25 +13,25 @@
         :rules="rules"
         label-width="80px"
       >
-      <el-form-item label="采购日期" prop="stoinDate" required>
+      <el-form-item label="订单日期" prop="orderDate" required>
         <el-date-picker
-          v-model="formData.stoinDate"
+          v-model="formData.orderDate"
           type="date"
-          placeholder="请选择采购日期"
+          placeholder="请选择订单日期"
           value-format="YYYY-MM-DD"
           style="width: 100%"
         />
       </el-form-item>
 
-      <el-form-item label="供货商" prop="orgName">
+      <el-form-item label="客户名称" prop="orgName">
           <div class="category-select" @click="handleOrgClick">
             <span v-if="formData.orgName">{{ formData.orgName }}</span>
-            <span v-else class="placeholder">请选择供货商</span>
+            <span v-else class="placeholder">请选择客户名称</span>
             <el-icon><ArrowRight /></el-icon>
           </div>
         </el-form-item>
 
-      <el-form-item label="物料名称" prop="categoryName" required>
+      <el-form-item label="烟花名称" prop="categoryName" required>
           <div class="category-select" @click="handleCategoryClick">
             <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
             <span v-else class="placeholder">请选择物料分类</span>
@@ -47,9 +47,9 @@
             placeholder="请输入单价" />
         </el-form-item>
 
-        <el-form-item label="数量" prop="stoinCnt">
+        <el-form-item label="数量" prop="orderCnt">
           <el-input 
-            v-model="formData.stoinCnt" 
+            v-model="formData.orderCnt" 
             type="number"
             @input="handlePriceOrCountChange"
             placeholder="请输入数量" />
@@ -92,11 +92,11 @@ const formRef = ref(null)
 const isEdit = ref(false)
 
 const formData = reactive({
-  stoinId: '',
+  orderId: '',
   categoryId: '', 
   categoryName: '',
-  stoinDate: new Date().toISOString().split('T')[0],
-  stoinCnt: '',
+  orderDate: new Date().toISOString().split('T')[0],
+  orderCnt: '',
   price: '',
   money: '',
   payMoney: '0.00',
@@ -106,19 +106,19 @@ const formData = reactive({
 })
 
 const rules = {
-  stoinDate: [
-    { required: true, message: '请选择采购日期', trigger: 'change' }
+  orderDate: [
+    { required: true, message: '请选择订单日期', trigger: 'change' }
   ],
   categoryName: [
-    { required: true, message: '请选择物料名称', trigger: 'change' }
+    { required: true, message: '请选择烟花名称', trigger: 'change' }
   ],
   orgName: [
-    { required: true, message: '请选择供货商', trigger: 'change' }
+    { required: true, message: '请选择客户名称', trigger: 'change' }
   ],
   price: [
     { required: true, message: '请输入单价', trigger: 'blur' }
   ],
-  stoinCnt: [
+  orderCnt: [
     { required: true, message: '请输入数量', trigger: 'blur' }
   ],
   money: [
@@ -147,10 +147,10 @@ onMounted(async () => {
   if (id) {
     isEdit.value = true
     try {
-      const resp = await getRequest(`/version/ht/matterStoin/info/${id}`)
+      const resp = await getRequest(`/version/ht/order/info/${id}`)
       if (resp?.data?.code === 0) {
         const data = resp.data.data
-        data.stoinDate = data.stoinDate ? dayjs(data.stoinDate).format('YYYY-MM-DD') : ''
+        data.orderDate = data.orderDate ? dayjs(data.orderDate).format('YYYY-MM-DD') : ''
         Object.assign(formData, data)
       }
     } catch (error) {
@@ -162,7 +162,7 @@ onMounted(async () => {
   if (tempFormData) {
     const savedData = JSON.parse(tempFormData)
     Object.assign(formData, savedData)
-    isEdit.value = !!savedData.stoinId
+    isEdit.value = !!savedData.orderId
     localStorage.removeItem('tempFormData')
   }
 
@@ -198,7 +198,7 @@ const handleSubmit = async () => {
   await formRef.value.validate()
   console.log(formData)
   try {
-    const url = isEdit.value ? '/version/ht/matterStoin/update' : '/version/ht/matterStoin/save'
+    const url = isEdit.value ? '/version/ht/order/update' : '/version/ht/order/save'
     const resp = await postRequest(url, formData)
     if (resp?.data?.code === 0) {
       ElMessage.success('保存成功')
@@ -215,14 +215,14 @@ const handleSubmit = async () => {
 const handleContinueSubmit = async () => {
   await formRef.value.validate()
   try {
-    const url = isEdit.value ? '/version/ht/matterStoin/update' : '/version/ht/matterStoin/save'
+    const url = isEdit.value ? '/version/ht/order/update' : '/version/ht/order/save'
     const resp = await postRequest(url, formData)
     if (resp?.data?.code === 0) {
       ElMessage.success('保存成功')
-      formData.stoinId = ''
+      formData.orderId = ''
       formData.categoryId = ''
       formData.categoryName = ''  
-      formData.stoinCnt = ''
+      formData.orderCnt = ''
       formData.price = ''
       formData.money = ''  
       formData.payMoney = '0.00'  
@@ -241,7 +241,7 @@ const handleDelete = () => {
     type: 'warning'
   }).then(async () => {
     try {
-      const resp = await  getRequest(`/version/ht/matterStoin/delete/${formData.stoinId}`)
+      const resp = await  getRequest(`/version/ht/order/delete/${formData.orderId}`)
       if (resp?.data?.code === 0) {
         ElMessage.success('删除成功')
         router.back()
@@ -258,8 +258,8 @@ const handleDelete = () => {
 }
 
 const handlePriceOrCountChange = () => {
-  if (formData.price && formData.stoinCnt) {
-    const calculatedMoney = (parseFloat(formData.price) * parseFloat(formData.stoinCnt)).toFixed(2)
+  if (formData.price && formData.orderCnt) {
+    const calculatedMoney = (parseFloat(formData.price) * parseFloat(formData.orderCnt)).toFixed(2)
     formData.money = calculatedMoney
   }
 }
@@ -349,5 +349,3 @@ const handlePriceOrCountChange = () => {
   font-size: 14px;
 }
 </style>
-
- 

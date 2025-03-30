@@ -8,48 +8,57 @@
     </div>
 
     <div class="function-icons">
+
       <div class="icon">
-        <router-link to="stoin">
+        <router-link to="/stoin">
           <img src="../assets/hxjl.png" />
         </router-link>
           <p>物料入库</p>
       </div>
+
       <div class="icon">
+        <router-link to="/order">
         <img src="../assets/hxjl.png" />
+        </router-link>
         <p>订单管理</p>
       </div>
+
       <div class="icon">
         <img src="../assets/hxjl.png" />
         <p>收支记账</p>
       </div>
+
       <div class="icon">
            <img src="../assets/hxjl.png" />
         <p>财务对账</p>
       </div>
+
       <div class="icon">
         <router-link to="/category?busiType=1">
            <img src="../assets/hxjl.png" />
         </router-link>
         <p>物料种类</p>
       </div>
+
       <div class="icon">
         <router-link to="/category?busiType=2">
            <img src="../assets/hxjl.png" />
         </router-link>
         <p>烟花种类</p>
       </div>
+
       <div class="icon">
         <router-link to="/org">
            <img src="../assets/hxjl.png" />
         </router-link>
         <p>客户管理</p>
       </div>
+
       <div class="icon">
-        <router-link to="/org">
            <img src="../assets/hxjl.png" />
-        </router-link>
         <p>账号设置</p>
       </div>
+      
     </div>
   </div>
 </template>

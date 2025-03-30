@@ -32,6 +32,18 @@ const routes = [
   {
     path: '/stoin/search',
     component: () => import('../views/stoin/search.vue')
+  },
+  {
+    path: '/order',
+    component: () => import('../views/order/index.vue')
+  },
+  {
+    path: '/order/form',
+    component: () => import('../views/order/form.vue')
+  },
+  {
+    path: '/order/search',
+    component: () => import('../views/order/search.vue')
   }
 ]
 
