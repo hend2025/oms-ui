@@ -74,7 +74,7 @@ const categoryList = ref([])
 const navigationStack = ref([])
 const currentPcode = ref(0)
 const currentTitle = computed(() => {
-  const baseTitle = route.query.busiType === '2' ? '产品种类维护' : '物料种类维护'
+  const baseTitle = route.query.busiType === '2' ? '烟花种类维护' : '物料种类维护'
   return navigationStack.value.length ? navigationStack.value[navigationStack.value.length - 1].name : baseTitle
 })
 

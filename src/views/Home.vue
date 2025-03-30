@@ -36,7 +36,7 @@
         <router-link to="/category?busiType=2">
            <img src="../assets/hxjl.png" />
         </router-link>
-        <p>产品种类</p>
+        <p>烟花种类</p>
       </div>
       <div class="icon">
         <router-link to="/org">
