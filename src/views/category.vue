@@ -83,7 +83,7 @@ const pageState = reactive({
   pageSize: 10,
   total: 0,
   hasMore: true,
-  loading: false
+  loading: false,
 })
 
 const fetchCategoryList = async (pcode = 0, itemName = '') => {

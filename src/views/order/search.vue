@@ -87,7 +87,7 @@ const handleCategoryClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/category',
-    query: { select: 'true', from: 'matter' }
+    query: { select: 'true', from: 'matter', busiType:  '2' }
   })
 }
 
@@ -95,7 +95,7 @@ const handleOrgClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/org',
-    query: { select: 'true', from: 'stoin' }
+    query: { select: 'true', from: 'order' }
   })
 }
 

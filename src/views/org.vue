@@ -75,17 +75,25 @@ const pageState = reactive({
   pageSize: 10,
   total: 0,
   hasMore: true,
-  searchKey: ''
+  searchKey: '',
+  from: route.query.from || ''
 })
 
 const fetchOrgList = async () => {
   if (pageState.loading || !pageState.hasMore) return
   try {
     pageState.loading = true
+    let orgType = ""
+    if(pageState.from === 'stoin') {
+        orgType = "1,3"
+    }else if(pageState.from === 'order') {
+        orgType = "2,3"
+    }
     const params = {
-      searchKey: pageState.searchKey,
       pageNum: pageState.pageNum,
-      pageSize: pageState.pageSize
+      pageSize: pageState.pageSize,
+      searchKey: pageState.searchKey,
+      orgType: orgType
     }
     const resp = await postRequest('/version/ht/org/list', params)
     if (resp?.data?.code === 0 && resp.data.data) {

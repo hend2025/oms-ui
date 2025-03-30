@@ -87,7 +87,7 @@ const handleCategoryClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/category',
-    query: { select: 'true', from: 'matter' }
+    query: { select: 'true', from: 'matter' , busiType:  '1' }
   })
 }
 
