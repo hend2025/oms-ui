@@ -11,6 +11,8 @@
         v-model="pageState.searchKey"
         placeholder="请输入搜索关键词"
         clearable
+        class="search-input"
+        @input="handleSearch"
         @clear="handleSearch"
         @keyup.enter="handleSearch"
       >
@@ -218,7 +220,7 @@ const handleMoreSearch = () => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
-// 在 script setup 中添加 handleReset 方法
+
 const handleReset = () => {
   Object.assign(pageState, {
     searchKey: '',
@@ -235,7 +237,7 @@ const handleReset = () => {
 .page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
-  padding-top: 56px;
+  padding-top: 48px;
 }
 
 .header {
@@ -262,8 +264,9 @@ const handleReset = () => {
 }
 
 .search-bar {
-  padding: 16px;
+  padding: 15px 15px 10px 15px;
   background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 .list-area { 
@@ -302,8 +305,8 @@ const handleReset = () => {
 
 .item-code {
   font-size: 14px;
-  color: #909399;
-  font-weight: normal;
+  color: #303133; 
+  font-weight: 600; 
 }
 
 .item-info {
@@ -343,4 +346,26 @@ const handleReset = () => {
   margin: 0 8px;
   height: 1.5em;
 }
+
+:deep(.search-input .el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+}
+
+:deep(.search-input .el-input-group__append) {
+  padding: 0;
+}
+
+:deep(.search-input .el-input-group__append .el-button) {
+  height: 36px;
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+}
+
+:deep(.search-input .el-input-group__append .el-divider--vertical) {
+  margin: 0;
+}
+
+
 </style>

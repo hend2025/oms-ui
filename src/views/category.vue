@@ -6,15 +6,15 @@
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
-    <div class="list-area">
+    <div class="search-bar">
       <el-input
         v-model="searchKey"
         placeholder="请输入搜索关键词"
         clearable
-        :prefix-icon="Search"
+        class="search-input"
       >
         <template #append>
-          <el-icon><Search /></el-icon>
+          <el-button @click="handleReset">重置</el-button>
         </template>
       </el-input>
     </div>
@@ -32,9 +32,9 @@
               <span class="code-text" v-if=" item.categoryCode">{{ item.categoryCode }}</span>
               <span class="code-text" v-else>{{ item.categoryId }}</span>
             </div>
-            <div class="item-name" v-if="!!item.aliasName || !!item.param">
-              <span class="code-text">{{ item.aliasName }}</span>
-              <span class="code-text">{{ item.param }}</span>
+            <div class="item-name" v-if="item.childNum === 0">
+              <span class="code-text">简称：{{ item.aliasName }}</span>
+              <span class="code-text">规格：{{ item.param }}</span>
             </div>
           </div> 
           <div class="item-actions" v-if="item.childNum>0">
@@ -95,7 +95,7 @@ const fetchCategoryList = async (pcode = 0, itemName = '') => {
   try {
     pageState.loading = true
     const params = {
-      keyword: searchKey.value,
+      searchKey: searchKey.value,
       parentId: pcode, 
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize,
@@ -255,7 +255,20 @@ onMounted(() => {
     fetchCategoryList()
   }
   window.addEventListener('scroll', handleScroll)
+
 })
+
+const handleReset = () => {
+  searchKey.value = ''
+}
+
+watch(searchKey, () => {
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  categoryList.value = []
+  fetchCategoryList(currentPcode.value)
+})
+
 </script>
 
 <style scoped>
@@ -286,6 +299,28 @@ onMounted(() => {
 .back-icon, .add-icon {
   font-size: 20px;
   cursor: pointer;
+}
+
+.search-bar {
+  padding: 15px 15px 10px 15px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;  
+}
+
+:deep(.search-input .el-input-group__append) {
+  padding: 0;
+}
+
+:deep(.search-input .el-input-group__append .el-button) {
+  height: 36px;
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+}
+
+:deep(.search-input .el-input-group__append .el-divider--vertical) {
+  margin: 0;
 }
 
 .list-area {

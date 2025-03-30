@@ -8,16 +8,16 @@
 
     <div class="search-bar">
       <el-input
-        v-model="searchKey"
+        v-model="pageState.searchKey"
         placeholder="请输入搜索关键词"
         clearable
+        class="search-input"
+        @input="handleSearch"
         @clear="handleSearch"
         @keyup.enter="handleSearch"
       >
         <template #append>
-          <el-button @click="handleSearch">
-            <el-icon><Search /></el-icon>
-          </el-button>
+          <el-button @click="handleReset">重置</el-button>
         </template>
       </el-input>
     </div>
@@ -66,16 +66,16 @@ import { postRequest } from "../utils/api"
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const route = useRoute()  // 添加这行
-
-const searchKey = ref('')
+const route = useRoute()  
 const orgList = ref([])
+
 const pageState = reactive({
   loading: false,
   pageNum: 1,
   pageSize: 10,
   total: 0,
-  hasMore: true
+  hasMore: true,
+  searchKey: ''
 })
 
 const fetchOrgList = async () => {
@@ -83,7 +83,7 @@ const fetchOrgList = async () => {
   try {
     pageState.loading = true
     const params = {
-      keyword: searchKey.value,
+      searchKey: pageState.searchKey,
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize
     }
@@ -129,17 +129,22 @@ const handleEdit = (item) => {
     localStorage.setItem('orgListState', JSON.stringify({
       targetId: item.orgId,
       pageNum: pageState.pageNum,
-      keyword: searchKey.value
+      keyword: pageState.searchKey
     }))
     router.push(`/orgForm?id=${item.orgId}`)
   }
+}
+
+const handleReset = () => {
+  pageState.searchKey = ''
+  handleSearch()
 }
 
 onMounted(async () => {
   const savedState = localStorage.getItem('orgListState')
   if (savedState) {
     const state = JSON.parse(savedState)
-    searchKey.value = state.keyword || ''
+    pageState.searchKey = state.keyword || ''
     
     // 分批加载数据直到找到目标记录
     const loadUntilTarget = async (targetId) => {
@@ -204,12 +209,29 @@ const handleScroll = () => {
   transition: transform 0.2s;
 }
 .back-icon:hover, .add-icon:hover { transform: scale(1.1); }
+
 .search-bar {
-  padding: 16px;
+  padding: 15px 15px 10px 15px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  margin-top: 60px;   
+  margin-top: 50px;  
 }
+
+:deep(.search-input .el-input-group__append) {
+  padding: 0;
+}
+
+:deep(.search-input .el-input-group__append .el-button) {
+  height: 36px;
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+}
+
+:deep(.search-input .el-input-group__append .el-divider--vertical) {
+  margin: 0;
+}
+
 .list-area { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
 .purchase-item {
   background: white;

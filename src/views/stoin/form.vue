@@ -70,7 +70,8 @@
         </el-form-item>
 
         <div class="form-footer">
-          <el-button type="primary" @click="handleSubmit">保存</el-button>
+          <el-button type="primary" @click="handleSubmit">保存【返回】</el-button>
+          <el-button type="primary" @click="handleContinueSubmit">保存【新增】</el-button>
         </div>
       </el-form>
     </div>
@@ -209,6 +210,29 @@ const handleSubmit = async () => {
   }
 }
 
+
+const handleContinueSubmit = async () => {
+  await formRef.value.validate()
+  try {
+    const url = isEdit.value ? '/version/ht/matterStoin/update' : '/version/ht/matterStoin/save'
+    const resp = await postRequest(url, formData)
+    if (resp?.data?.code === 0) {
+      ElMessage.success('保存成功')
+      formData.stoinId = ''
+      formData.categoryId = ''
+      formData.categoryName = ''  
+      formData.stoinCnt = ''
+      formData.price = ''
+      formData.money = ''  
+      formData.payMoney = '0.00'  
+    } else {
+      throw new Error(resp?.data?.message || '保存失败')
+    }
+  } catch (error) {
+    ElMessage.error(error.message || '保存失败')
+  }
+}
+
 const handleDelete = () => {
   ElMessageBox.confirm('确认删除该采购记录吗？', '提示', {
     confirmButtonText: '确定',
@@ -275,7 +299,7 @@ const handlePriceOrCountChange = () => {
 }
 
 .form-container {
-  padding: 20px 15px 10px 10px;
+  padding: 20px 15px;
   background: #fff;
   margin: 10px;
   border-radius: 8px;
