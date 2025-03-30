@@ -18,13 +18,15 @@
 
       <div class="icon">
         <router-link to="/order">
-        <img src="../assets/hxjl.png" />
+          <img src="../assets/hxjl.png" />
         </router-link>
         <p>订单管理</p>
       </div>
 
       <div class="icon">
-        <img src="../assets/hxjl.png" />
+        <router-link to="/account">
+          <img src="../assets/hxjl.png" />
+        </router-link>
         <p>收支记账</p>
       </div>
 
