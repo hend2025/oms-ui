@@ -81,7 +81,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
-import { postRequest, getRequest } from "../../utils/api"  // 修改这行，添加一个层级
+import { postRequest, getRequest } from "../../utils/api"
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
@@ -196,10 +196,8 @@ onMounted(async () => {
 const handleSubmit = async () => {
   await formRef.value.validate()
   try {
-    const params = {
-      ...formData
-    }
-    const resp = await postRequest('/version/ht/matterStoin/save', params)
+    const url = isEdit.value ? '/version/ht/matterStoin/update' : '/version/ht/matterStoin/save'
+    const resp = await postRequest(url, formData)
     if (resp?.data?.code === 0) {
       ElMessage.success('保存成功')
       router.back()

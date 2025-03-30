@@ -15,15 +15,17 @@
         @keyup.enter="handleSearch"
       >
         <template #append>
+          <el-button @click="handleReset">重置</el-button>
+          <el-divider direction="vertical" />
           <el-button @click="handleMoreSearch">更多</el-button>
         </template>
       </el-input>
     </div>
- 
 
     <div class="list-area">
       <div v-for="item in stoinList" 
         :key="item.stoinId" 
+        :data-id="item.stoinId"
         class="list-item"
         @click="handleEdit(item)"
       >
@@ -54,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue' 
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
@@ -81,14 +83,54 @@ const formatDate = (date) => {
   return dayjs(date).format('YYYY-MM-DD')
 }
 
-onMounted(() => {
-  const searchParams = localStorage.getItem('stoinSearchParams')
-  if (searchParams) {
-    const params = JSON.parse(searchParams)
-    Object.assign(pageState, params)
-    localStorage.removeItem('stoinSearchParams')
+onMounted(async () => {
+  const savedState = localStorage.getItem('stoinListState')
+  if (savedState) {
+    const state = JSON.parse(savedState)
+    Object.assign(pageState, {
+      pageNum: 1,
+      searchKey: state.searchKey || '',
+      startDate: state.startDate || '',
+      endDate: state.endDate || '',
+      categoryId: state.categoryId || '',
+      orgId: state.orgId || ''
+    })
+    
+    // 循环加载数据直到目标页
+    const targetPage = state.pageNum || 1
+    while (pageState.pageNum <= targetPage && pageState.hasMore) {
+      await loadData(pageState.pageNum === 1)
+    }
+    
+    // 数据加载完成后恢复位置
+    nextTick(() => {
+      if (state.targetId) {
+        const targetElement = document.querySelector(`[data-id="${state.targetId}"]`)
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+        } else if (state.scrollPosition) {
+          window.scrollTo({
+            top: state.scrollPosition,
+            behavior: 'instant'
+          })
+        }
+      } else if (state.scrollPosition) {
+        window.scrollTo({
+          top: state.scrollPosition,
+          behavior: 'instant'
+        })
+      }
+      localStorage.removeItem('stoinListState')
+    })
+  } else {
+    const searchParams = localStorage.getItem('stoinSearchParams')
+    if (searchParams) {
+      const params = JSON.parse(searchParams)
+      Object.assign(pageState, params)
+      localStorage.removeItem('stoinSearchParams')
+    }
+    await loadData(true)
   }
-  loadData(true)
   window.addEventListener('scroll', handleScroll)
 })
 
@@ -111,8 +153,7 @@ const loadData = async (isRefresh = false) => {
       categoryId: pageState.categoryId,
       orgId: pageState.orgId
     }
-    
-    console.log(params)
+     
     const resp = await postRequest('/version/ht/matterStoin/list', params)
     if (resp?.data?.code === 0 && resp.data.data) {
       const { records = [], total = 0 } = resp.data.data
@@ -156,6 +197,17 @@ const handleAdd = () => {
 }
 
 const handleEdit = (item) => {
+  localStorage.setItem('stoinListState', JSON.stringify({
+    pageNum: pageState.pageNum,
+    searchKey: pageState.searchKey,
+    startDate: pageState.startDate,
+    endDate: pageState.endDate,
+    categoryId: pageState.categoryId,
+    orgId: pageState.orgId,
+    list: stoinList.value,
+    scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
+    targetId: item.stoinId
+  }))
   router.push(`/stoin/form?id=${item.stoinId}`)
 }
 
@@ -166,6 +218,17 @@ const handleMoreSearch = () => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+// 在 script setup 中添加 handleReset 方法
+const handleReset = () => {
+  Object.assign(pageState, {
+    searchKey: '',
+    startDate: '',
+    endDate: '',
+    categoryId: '',
+    orgId: ''
+  })
+  loadData(true)
+}
 </script>
 
 <style scoped>
@@ -273,5 +336,11 @@ onUnmounted(() => {
 @keyframes rotating {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+:deep(.el-divider--vertical) {
+  border-left: 2px solid #dcdfe6;
+  margin: 0 8px;
+  height: 1.5em;
 }
 </style>
