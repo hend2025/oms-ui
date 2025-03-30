@@ -152,11 +152,11 @@ const handleBack = () => {
 }
 
 const handleAdd = () => {
-  router.push('/stoin/formm')
+  router.push('/stoin/form')
 }
 
 const handleEdit = (item) => {
-  router.push(`/stoin/formm?id=${item.stoinId}`)
+  router.push(`/stoin/form?id=${item.stoinId}`)
 }
 
 const handleMoreSearch = () => {

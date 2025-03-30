@@ -12,7 +12,7 @@
         <router-link to="stoin">
           <img src="../assets/hxjl.png" />
         </router-link>
-          <p>物料采购</p>
+          <p>物料入库</p>
       </div>
       <div class="icon">
         <img src="../assets/hxjl.png" />
