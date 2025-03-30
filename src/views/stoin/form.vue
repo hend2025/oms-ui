@@ -81,7 +81,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete, ArrowRight } from '@element-plus/icons-vue'
-import { postRequest, getRequest } from "../utils/api"
+import { postRequest, getRequest } from "../../utils/api"  // 修改这行，添加一个层级
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 

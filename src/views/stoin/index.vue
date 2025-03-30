@@ -8,16 +8,18 @@
 
     <div class="search-bar">
       <el-input
-        v-model="searchKey"
-        placeholder="请输入名称/编码"
+        v-model="pageState.searchKey"
+        placeholder="请输入搜索关键词"
         clearable
-        @input="handleSearch"
+        @clear="handleSearch"
+        @keyup.enter="handleSearch"
       >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
+        <template #append>
+          <el-button @click="handleMoreSearch">更多</el-button>
         </template>
       </el-input>
     </div>
+ 
 
     <div class="list-area">
       <div v-for="item in stoinList" 
@@ -56,24 +58,39 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
-import { postRequest, getRequest } from "../utils/api"
+import { postRequest, getRequest } from "../../utils/api"  // 修改这行，添加一个层级
 
 import dayjs from 'dayjs' 
 
 const router = useRouter()
-const searchKey = ref('')
 const stoinList = ref([])
 const pageState = reactive({
   loading: false,
   pageNum: 1,
   pageSize: 10,
-  hasMore: true
+  hasMore: true,
+  searchKey: '',
+  startDate: '',
+  endDate: '',
+  categoryId: '',
+  orgId: ''
 })
 
 const formatDate = (date) => {
   if (!date) return ''
   return dayjs(date).format('YYYY-MM-DD')
 }
+
+onMounted(() => {
+  const searchParams = localStorage.getItem('stoinSearchParams')
+  if (searchParams) {
+    const params = JSON.parse(searchParams)
+    Object.assign(pageState, params)
+    localStorage.removeItem('stoinSearchParams')
+  }
+  loadData(true)
+  window.addEventListener('scroll', handleScroll)
+})
 
 const loadData = async (isRefresh = false) => {
   if (pageState.loading || (!isRefresh && !pageState.hasMore)) return
@@ -88,10 +105,15 @@ const loadData = async (isRefresh = false) => {
     const params = {
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize,
-      searchKey: searchKey.value
+      searchKey: pageState.searchKey,
+      startDate: pageState.startDate,
+      endDate: pageState.endDate,
+      categoryId: pageState.categoryId,
+      orgId: pageState.orgId
     }
     
-    const resp = await getRequest('/version/ht/matterStoin/list', params)
+    console.log(params)
+    const resp = await postRequest('/version/ht/matterStoin/list', params)
     if (resp?.data?.code === 0 && resp.data.data) {
       const { records = [], total = 0 } = resp.data.data
       if (isRefresh) {
@@ -130,17 +152,16 @@ const handleBack = () => {
 }
 
 const handleAdd = () => {
-  router.push('/stoinform')
+  router.push('/stoin/formm')
 }
 
 const handleEdit = (item) => {
-  router.push(`/stoinform?id=${item.stoinId}`)
+  router.push(`/stoin/formm?id=${item.stoinId}`)
 }
 
-onMounted(() => {
-  loadData(true)
-  window.addEventListener('scroll', handleScroll)
-})
+const handleMoreSearch = () => {
+  router.push('/stoin/search')
+}
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)

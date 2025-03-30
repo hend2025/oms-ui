@@ -38,13 +38,15 @@ const routes = [
   },
   {
     path: '/stoin',
-    name: 'stoin',
-    component: () => import('../views/stoin.vue')
+    component: () => import('../views/stoin/index.vue')
   },
   {
-    path: '/stoinForm',
-    name: 'StoinForm',
-    component: () => import('../views/stoinForm.vue')
+    path: '/stoin/form',
+    component: () => import('../views/stoin/form.vue')
+  },
+  {
+    path: '/stoin/search',
+    component: () => import('../views/stoin/search.vue')
   }
 ]
 
