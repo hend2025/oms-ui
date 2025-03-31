@@ -60,6 +60,10 @@ const routes = [
   {
     path: '/account/check',
     component: () => import('../views/account/check.vue')
+  },
+  {
+    path: '/account/total',
+    component: () => import('../views/account/total.vue')
   }
 ]
 

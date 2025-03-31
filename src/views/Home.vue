@@ -34,7 +34,14 @@
         <router-link to="/account/check">
            <img src="../assets/hxjl.png" />
         </router-link>
-        <p>财务对账</p>
+        <p>销售对账</p>
+      </div>
+
+      <div class="icon">
+        <router-link to="/account/total">
+           <img src="../assets/hxjl.png" />
+        </router-link>
+        <p>销售总账</p>
       </div>
 
       <div class="icon">

@@ -33,9 +33,14 @@
       >
         <div class="item-header">
           <span class="item-title">{{ formatDate(item.accountDate) }}</span>
-          <span class="item-title" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
-            ￥{{ item.money }}
-          </span>
+          <div class="amount-wrapper">
+            <span class="pay-type-tag" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
+              {{ item.payType === '1' ? '收入' : '支出' }}
+            </span>
+            <span class="item-title" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
+              ￥{{ item.money }}
+            </span>
+          </div>
         </div>
         <div class="item-info">
           <span>{{ item.orgName }}</span>
@@ -368,5 +373,27 @@ onUnmounted(() => {
 
 .expense {
   color:rgb(60, 60, 230) !important;  
+}
+.amount-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pay-type-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.pay-type-tag.income {
+  background-color: #ffebeb;
+  color: #eb2424;
+}
+
+.pay-type-tag.expense {
+  background-color: #e8f1ff;
+  color: rgb(60, 60, 230);
 }
 </style>

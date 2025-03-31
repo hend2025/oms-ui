@@ -7,21 +7,32 @@
     </div>
 
     <div class="search-bar">
-      <el-input
-        v-model="pageState.searchKey"
-        placeholder="请输入搜索关键词"
-        clearable
-        class="search-input"
-        @input="handleSearch"
-        @clear="handleSearch"
-        @keyup.enter="handleSearch"
-      >
-        <template #append>
-          <el-button @click="handleReset">重置</el-button>
-          <el-divider direction="vertical" />
-          <el-button @click="handleMoreSearch">更多</el-button>
-        </template>
-      </el-input>
+      <div class="search-row">
+        <el-select v-model="pageState.dateRange" @change="handleDateChange">
+          <el-option label="近3月" value="3" />
+          <el-option label="近6月" value="6" />
+          <el-option label="近9月" value="9" />
+          <el-option label="近12月" value="12" />
+          <el-option label="近18月" value="18" />
+          <el-option label="近24月" value="24" />
+          <el-option label="全部" value="" />
+        </el-select>
+        <el-input
+          v-model="pageState.searchKey"
+          placeholder="请输入搜索关键词"
+          clearable
+          class="search-input"
+          @input="handleSearch"
+          @clear="handleSearch"
+          @keyup.enter="handleSearch"
+        >
+          <template #append>
+            <el-button @click="handleReset">重置</el-button>
+            <el-divider direction="vertical" />
+            <el-button @click="handleMoreSearch">更多</el-button>
+          </template>
+        </el-input>
+      </div>
     </div>
 
     <div class="list-area">
@@ -79,7 +90,8 @@ const pageState = reactive({
   startDate: '',
   endDate: '',
   payType: '',
-  orgId: ''
+  orgId: '',
+  dateRange: '12'
 })
 
 const formatDate = (date) => {
@@ -267,9 +279,49 @@ onUnmounted(() => {
 }
 
 .search-bar {
-  padding: 15px 15px 10px 15px;
+  padding: 15px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-row {
+  display: flex;
+  gap: 6px;  /* 从原来的 12px 减少到 6px */
+  align-items: center;
+}
+
+:deep(.el-select) {
+  width: 100px;
+}
+
+:deep(.el-select .el-input__wrapper),
+:deep(.search-input .el-input__wrapper),
+:deep(.search-input .el-input-group__append .el-button) {
+  height: 36px;
+  line-height: 36px;
+  box-sizing: border-box;
+}
+
+:deep(.search-input .el-input__wrapper),
+:deep(.search-input .el-input-group__append .el-button) {
+  height: 36px;
+  line-height: 36px;
+  box-sizing: border-box;
+}
+
+:deep(.el-input-group__append) {
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.el-divider--vertical) {
+  height: 20px;
+  margin: 0 8px;
+}
+
+.search-input {
+  flex: 1;
 }
 
 .list-area { 
@@ -348,6 +400,16 @@ onUnmounted(() => {
   border-left: 2px solid #dcdfe6;
   margin: 0 8px;
   height: 1.5em;
+}
+
+:deep(.el-select .el-input__wrapper) {
+  height: 36px;
+  line-height: 36px;
+}
+
+:deep(.el-select .el-input__inner) {
+  height: 36px;
+  line-height: 36px;
 }
 
 :deep(.search-input .el-input__inner) {
