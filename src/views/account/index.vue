@@ -34,7 +34,7 @@
         <div class="item-header">
           <span class="item-title">{{ formatDate(item.accountDate) }}</span>
           <span class="item-title" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
-              ￥{{ item.money }}
+            ￥{{ item.money }}
           </span>
         </div>
         <div class="item-info">
@@ -363,10 +363,10 @@ onUnmounted(() => {
 }
 
 .income {
-  color: #f56c6c !important;  /* 红色 */
+  color: #eb2424 !important; 
 }
 
 .expense {
-  color:rgb(60, 60, 230) !important;  /* 黄色 */
+  color:rgb(60, 60, 230) !important;  
 }
 </style>

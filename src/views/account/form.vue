@@ -32,10 +32,10 @@
         </el-form-item>
 
         <el-form-item label="收支类型" prop="payType">
-          <el-select v-model="formData.payType" placeholder="请选择收支类型" style="width: 100%">
-            <el-option label="收入" value="1" />
-            <el-option label="支出" value="2" />
-          </el-select>
+          <el-radio-group v-model="formData.payType" style="width: 100%">
+            <el-radio label="1">收入</el-radio>
+            <el-radio label="2">支出</el-radio>
+          </el-radio-group>
         </el-form-item>
 
         <el-form-item label="记账金额" prop="money">
@@ -285,5 +285,14 @@ const handleDelete = () => {
 .category-select .placeholder {
   color: var(--el-text-color-placeholder);
   font-size: 14px;
+}
+
+:deep(.el-radio-group) {
+  display: flex;
+  justify-content: flex-start;
+  gap: 30px;
+  height: 42px;
+  align-items: center;
+  padding: 0 12px;
 }
 </style>
