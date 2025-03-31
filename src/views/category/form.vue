@@ -50,7 +50,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { postRequest, getRequest } from "../utils/api"
+import { postRequest, getRequest } from "../../utils/api"
 
 const router = useRouter()
 const route = useRoute()

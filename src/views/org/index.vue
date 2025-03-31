@@ -61,9 +61,9 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'  
 import { Search, ArrowLeft, Plus, Loading } from '@element-plus/icons-vue' 
-import { useRouter, useRoute } from 'vue-router'  // 添加 useRoute
-import { postRequest } from "../utils/api"
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { postRequest, getRequest } from "../../utils/api"
 
 const router = useRouter()
 const route = useRoute()  
@@ -122,7 +122,7 @@ const handleSearch = () => {
 }
 
 const handleBack = () => router.back()
-const handleAdd = () => router.push('/orgForm')
+const handleAdd = () => router.push('/org/form')
 
 const handleEdit = (item) => {
   if (route.query.select === 'true') {
@@ -139,7 +139,7 @@ const handleEdit = (item) => {
       pageNum: pageState.pageNum,
       keyword: pageState.searchKey
     }))
-    router.push(`/orgForm?id=${item.orgId}`)
+    router.push(`/org/form?id=${item.orgId}`)
   }
 }
 

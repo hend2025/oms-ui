@@ -54,7 +54,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Delete } from '@element-plus/icons-vue'
-import { postRequest, getRequest } from "../utils/api"
+import { postRequest, getRequest } from "../../utils/api"
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()

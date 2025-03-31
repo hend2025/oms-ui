@@ -62,7 +62,7 @@
 import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'  
 import { Search, ArrowLeft, ArrowRight, Plus, Loading } from '@element-plus/icons-vue'
 import { useRouter, useRoute } from 'vue-router' 
-import { postRequest } from "../utils/api"
+import { postRequest } from "../../utils/api"
 import { throttle } from 'lodash-es'
 import { ElMessage } from 'element-plus'
 
@@ -164,7 +164,7 @@ const handleViewSub = (item) => {
       }
       localStorage.setItem('categoryScrollPosition', JSON.stringify(currentScrollPosition.value))
       router.push({
-        path: '/categoryForm',
+        path: '/category/form',
         query: { 
           type: 'edit',
           id: item.categoryId,
@@ -187,7 +187,7 @@ const handleViewSub = (item) => {
 const handleAdd = () => {
   const busiType = route.query.busiType || '1'
   router.push({
-    path: '/categoryForm',
+    path: '/category/form',
     query: { 
       type: 'add',
       parentId: currentPcode.value,

@@ -7,19 +7,19 @@ const routes = [
   },
   {
     path: '/category',
-    component: () => import('../views/category.vue')
+    component: () => import('../views/category/index.vue')
   },
   {
-    path: '/categoryForm',
-    component: () => import('../views/categoryForm.vue')
+    path: '/category/form',
+    component: () => import('../views/category/form.vue')
   },
   {
     path: '/org',
-    component: () => import('../views/org.vue')
+    component: () => import('../views/org/index.vue')
   },
   {
-    path: '/orgForm',
-    component: () => import('../views/orgForm.vue')
+    path: '/org/form',
+    component: () => import('../views/org/form.vue')
   },
   {
     path: '/stoin',
