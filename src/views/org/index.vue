@@ -55,6 +55,7 @@
     <div v-if="!pageState.loading && orgList.length === 0" class="empty-text">
       暂无数据
     </div>
+
   </div>
 </template>
 
@@ -191,6 +192,7 @@ const handleScroll = () => {
     fetchOrgList()
   }
 }
+
 </script>
 
 <style scoped>

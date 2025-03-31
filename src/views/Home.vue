@@ -31,7 +31,9 @@
       </div>
 
       <div class="icon">
+        <router-link to="/account/check">
            <img src="../assets/hxjl.png" />
+        </router-link>
         <p>财务对账</p>
       </div>
 
