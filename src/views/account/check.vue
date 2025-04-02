@@ -3,7 +3,6 @@
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
       <h1>销售对账</h1>
-      <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
     <div class="search-bar">
@@ -26,17 +25,14 @@
       <div class="search-row">
         <el-input
           v-model="pageState.searchKey"
-          placeholder="请输入搜索关键词"
+          placeholder="请输入客户或供应商"
           clearable
           class="search-input"
-          @input="handleSearch"
-          @clear="handleSearch"
-          @keyup.enter="handleSearch"
+          readonly
+          @click="handleOrgSelect"
         >
           <template #append>
             <el-button @click="handleReset">重置</el-button>
-            <el-divider direction="vertical" />
-            <el-button @click="handleMoreSearch">更多</el-button>
           </template>
         </el-input>
       </div>
@@ -47,21 +43,21 @@
         :key="item.orgId" 
         :data-id="item.orgId"
         class="list-item"
-        @click="handleEdit(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ item.orgName }}</span>
-          <span class="item-title" :class="{ 'income': item.balance > 0, 'expense': item.payType === '2' }">
-            ￥{{ item.balance }}
-          </span>
+          <div class="amount-wrapper">
+            <span class="balance-type" :class="{ 'income': item.balance > 0, 'expense': item.balance < 0 }">
+              {{ item.balance > 0 ? '应收' : '应付' }}
+            </span>
+            <span class="item-title" :class="{ 'income': item.balance > 0, 'expense': item.balance < 0 }">
+              ￥{{ item.balance > 0 ? item.balance : 0 - item.balance }}
+            </span>
+          </div>
         </div>
         <div class="item-info">
-          <span>应付：￥{{ item.payable}}</span>
-          <span>已付：￥{{ item.paid}}</span>
-        </div>  
-        <div class="item-info">
-          <span>应收：￥{{ item.receivable}}</span>
-          <span>已收：￥{{ item.received}}</span>
+          <span>{{ item.conerName}}</span>
+          <span>{{ item.conerTel}}</span>
         </div>  
       </div>
 
@@ -100,57 +96,8 @@ const pageState = reactive({
   orgId: '',
 })
 
-const formatDate = (date) => {
-  if (!date) return ''
-  return dayjs(date).format('YYYY-MM-DD')
-}
-
 onMounted(async () => {
-  const savedState = localStorage.getItem('accountListState')
-  if (savedState) {
-    const state = JSON.parse(savedState)
-    Object.assign(pageState, {
-      pageNum: 1,
-      searchKey: state.searchKey || '',
-      startDate: state.startDate || '',
-      endDate: state.endDate || '',
-      payType: state.payType || '',
-      orgId: state.orgId || ''
-    })
-    
-    const targetPage = state.pageNum || 1
-    while (pageState.pageNum <= targetPage && pageState.hasMore) {
-      await loadData(pageState.pageNum === 1)
-    }
-    
-    nextTick(() => {
-      if (state.targetId) {
-        const targetElement = document.querySelector(`[data-id="${state.targetId}"]`)
-        if (targetElement) {
-          targetElement.scrollIntoView({ behavior: 'instant', block: 'center' })
-        } else if (state.scrollPosition) {
-          window.scrollTo({
-            top: state.scrollPosition,
-            behavior: 'instant'
-          })
-        }
-      } else if (state.scrollPosition) {
-        window.scrollTo({
-          top: state.scrollPosition,
-          behavior: 'instant'
-        })
-      }
-      localStorage.removeItem('accountListState')
-    })
-  } else {
-    const searchParams = localStorage.getItem('accountSearchParams')
-    if (searchParams) {
-      const params = JSON.parse(searchParams)
-      Object.assign(pageState, params)
-      localStorage.removeItem('accountSearchParams')
-    }
-    await loadData(true)
-  }
+  await loadData(true)
   window.addEventListener('scroll', handleScroll)
 })
 
@@ -197,10 +144,6 @@ const loadData = async (isRefresh = false) => {
   }
 }
 
-const handleSearch = () => {
-  loadData(true)
-}
-
 const handleScroll = () => {
   const scrollTop = document.documentElement.scrollTop
   const clientHeight = document.documentElement.clientHeight
@@ -214,35 +157,12 @@ const handleScroll = () => {
 const handleBack = () => {
   router.back()
 }
-
-const handleAdd = () => {
-  router.push('/account/form')
-}
-
-const handleEdit = (item) => {
-  localStorage.setItem('accountListState', JSON.stringify({
-    pageNum: pageState.pageNum,
-    searchKey: pageState.searchKey,
-    startDate: pageState.startDate,
-    endDate: pageState.endDate,
-    payType: pageState.payType,
-    orgId: pageState.orgId,
-    list: accountList.value,
-    scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
-    targetId: item.accountId
-  }))
-  router.push(`/account/form?id=${item.accountId}`)
-}
-
-const handleMoreSearch = () => {
-  router.push('/account/search')
-}
-
+ 
 const handleReset = () => {
   Object.assign(pageState, {
     searchKey: '',
-    startDate: '',
-    endDate: '',
+    startDate: dayjs().subtract(11, 'month').format('YYYY-MM'),
+    endDate: dayjs().format('YYYY-MM'),
     payType: '',
     orgId: ''
   })
@@ -252,6 +172,14 @@ const handleReset = () => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+const handleOrgSelect = () => {
+  router.push({
+    path: '/org',
+    query: { select: 'true', from: 'check' }
+  })
+}
+
 </script>
 
 <style scoped>
@@ -267,13 +195,16 @@ onUnmounted(() => {
   color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   position: fixed; 
-  top: 0; left: 0; right: 0;       
+  top: 0; 
+  left: 0; 
+  right: 0;       
   z-index: 100;   
 }
 
 .header h1 { 
+  flex: 1;
+  text-align: center;
   margin: 0; 
   font-size: 18px; 
   font-weight: 500; 
@@ -292,7 +223,7 @@ onUnmounted(() => {
 
 .search-row {
   display: flex;
-  gap: 6px;  /* 从原来的 12px 减少到 6px */
+  gap: 6px; 
   align-items: center;
 }
 
@@ -360,7 +291,7 @@ onUnmounted(() => {
 
 .item-title { 
   font-weight: 600; 
-  font-size: 16px; 
+  font-size: 14px; 
   color: #303133; 
 }
 
@@ -467,4 +398,23 @@ onUnmounted(() => {
   width: 80px !important;
 }
 
+.amount-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.balance-type {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.balance-type.income {
+  background-color: #ffebeb;
+}
+
+.balance-type.expense {
+  background-color: #e6e6fa;
+}
 </style>

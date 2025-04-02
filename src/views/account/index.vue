@@ -7,21 +7,35 @@
     </div>
 
     <div class="search-bar">
-      <el-input
-        v-model="pageState.searchKey"
-        placeholder="请输入搜索关键词"
-        clearable
-        class="search-input"
-        @input="handleSearch"
-        @clear="handleSearch"
-        @keyup.enter="handleSearch"
-      >
-        <template #append>
-          <el-button @click="handleReset">重置</el-button>
-          <el-divider direction="vertical" />
-          <el-button @click="handleMoreSearch">更多</el-button>
-        </template>
-      </el-input>
+      <div class="date-picker-group">
+            <el-date-picker
+              v-model="pageState.startDate"
+              type="day"
+              placeholder="请选择开始年月"
+              value-format="YYYY-MM-DD" 
+              class="custom-height"
+            />
+            <el-date-picker
+              v-model="pageState.endDate"
+              type="day"
+              placeholder="请选择结束年月" 
+              value-format="YYYY-MM-DD" 
+              class="custom-height"
+            />
+      </div>
+      <div class="search-row">
+        <el-input
+          v-model="pageState.searchKey"
+          placeholder="请输入客户或供应商"
+          clearable
+          class="search-input"
+          @click="handleOrgSelect"
+        >
+          <template #append>
+            <el-button @click="handleReset">重置</el-button>
+          </template>
+        </el-input>
+      </div>
     </div>
 
     <div class="list-area">
@@ -76,8 +90,8 @@ const pageState = reactive({
   pageSize: 10,
   hasMore: true,
   searchKey: '',
-  startDate: '',
-  endDate: '',
+  startDate: dayjs().subtract(11, 'month').format('YYYY-MM-DD'),
+  endDate: dayjs().format('YYYY-MM-DD'),
   payType: '',
   orgId: ''
 })
@@ -220,8 +234,8 @@ const handleMoreSearch = () => {
 const handleReset = () => {
   Object.assign(pageState, {
     searchKey: '',
-    startDate: '',
-    endDate: '',
+    startDate: dayjs().subtract(11, 'month').format('YYYY-MM-DD'),
+    endDate: dayjs().format('YYYY-MM-DD'),
     payType: '',
     orgId: ''
   })
@@ -267,6 +281,33 @@ onUnmounted(() => {
   padding: 15px 15px 10px 15px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+.date-picker-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+:deep(.date-picker-group .el-input) {
+  width: 50% !important;
+}
+
+:deep(.date-picker-group .el-input__wrapper) {
+  width: 50% !important;
+  height: 36px;
+  line-height: 36px;
+  box-sizing: border-box;
+}
+
+:deep(.date-picker-group .el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+  padding: 0 8px;
+}
+:deep(.el-input__wrapper) {
+  width: 80px !important;
 }
 
 .list-area { 

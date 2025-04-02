@@ -13,6 +13,13 @@
         :rules="rules"
         label-width="80px"
       >
+      <el-form-item label="收支类型" prop="payType">
+          <el-radio-group v-model="formData.payType" style="width: 100%">
+            <el-radio label="1">收入</el-radio>
+            <el-radio label="2">支出</el-radio>
+          </el-radio-group>
+      </el-form-item>
+      
       <el-form-item label="订单日期" prop="accountDate" required>
         <el-date-picker
           v-model="formData.accountDate"
@@ -29,13 +36,6 @@
             <span v-else class="placeholder">请选择客户名称</span>
             <el-icon><ArrowRight /></el-icon>
           </div>
-        </el-form-item>
-
-        <el-form-item label="收支类型" prop="payType">
-          <el-radio-group v-model="formData.payType" style="width: 100%">
-            <el-radio label="1">收入</el-radio>
-            <el-radio label="2">支出</el-radio>
-          </el-radio-group>
         </el-form-item>
 
         <el-form-item label="记账金额" prop="money">
