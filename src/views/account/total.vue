@@ -64,6 +64,9 @@
           <span>支出：￥{{ item.pay}}</span>
           <span>收入：￥{{ item.inCome}}</span>
         </div>  
+        <div class="item-actions">
+            <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+          </div>
       </div>
 
       <div v-if="loading" class="loading-text">
@@ -80,7 +83,7 @@
 import { ref, onMounted } from 'vue' 
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Loading } from '@element-plus/icons-vue'
+import { ArrowLeft, Loading,ArrowRight } from '@element-plus/icons-vue'
 import { postRequest } from "../../utils/api"
 import dayjs from 'dayjs' 
 
@@ -210,6 +213,27 @@ const handleItemClick = (item) => {
   justify-content: space-between;
   color: #606266;
   font-size: 14px;
+}
+
+.item-actions {
+  position: relative;
+  padding-right: 40px;
+}
+
+.item-actions {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #bfbfbf;
+}
+
+.arrow-icon {
+  font-size: 16px;
+}
+
+.item-actions:hover {
+  color: #1890ff;
 }
 
 .loading-text, .empty-text {
