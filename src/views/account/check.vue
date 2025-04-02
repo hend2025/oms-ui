@@ -2,21 +2,28 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>对账</h1>
+      <h1>销售对账</h1>
       <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
     <div class="search-bar">
+      <div class="date-picker-group">
+            <el-date-picker
+              v-model="pageState.startDate"
+              type="month"
+              placeholder="请选择开始年月"
+              value-format="YYYY-MM" 
+              class="custom-height"
+            />
+            <el-date-picker
+              v-model="pageState.endDate"
+              type="month"
+              placeholder="请选择结束年月" 
+              value-format="YYYY-MM" 
+              class="custom-height"
+            />
+      </div>
       <div class="search-row">
-        <el-select v-model="pageState.dateRange" @change="handleDateChange">
-          <el-option label="近3月" value="3" />
-          <el-option label="近6月" value="6" />
-          <el-option label="近9月" value="9" />
-          <el-option label="近12月" value="12" />
-          <el-option label="近18月" value="18" />
-          <el-option label="近24月" value="24" />
-          <el-option label="全部" value="" />
-        </el-select>
         <el-input
           v-model="pageState.searchKey"
           placeholder="请输入搜索关键词"
@@ -87,11 +94,10 @@ const pageState = reactive({
   pageSize: 10,
   hasMore: true,
   searchKey: '',
-  startDate: '',
-  endDate: '',
+  startDate: dayjs().subtract(11, 'month').format('YYYY-MM'),
+  endDate: dayjs().format('YYYY-MM'),
   payType: '',
   orgId: '',
-  dateRange: '12'
 })
 
 const formatDate = (date) => {
@@ -162,8 +168,8 @@ const loadData = async (isRefresh = false) => {
       pageNum: pageState.pageNum,
       pageSize: pageState.pageSize,
       searchKey: pageState.searchKey,
-      startDate: pageState.startDate,
-      endDate: pageState.endDate,
+      startDate: pageState.startDate + '-01',
+      endDate: pageState.endDate + '-' + dayjs(pageState.endDate).daysInMonth(),
       payType: pageState.payType,
       orgId: pageState.orgId
     }
@@ -439,4 +445,26 @@ onUnmounted(() => {
 .expense {
   color:rgb(60, 60, 230) !important;  
 }
+
+.date-picker-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+:deep(.date-picker-group .el-input) {
+  width: 50% !important;
+}
+
+:deep(.date-picker-group .el-input__wrapper) {
+  width: 50% !important;
+}
+
+:deep(.date-picker-group .el-input__inner) {
+  padding: 0 8px;
+}
+:deep(.el-input__wrapper) {
+  width: 80px !important;
+}
+
 </style>

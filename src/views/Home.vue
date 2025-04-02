@@ -20,7 +20,7 @@
         <router-link to="/order">
           <img src="../assets/hxjl.png" />
         </router-link>
-        <p>订单管理</p>
+        <p>订单出库</p>
       </div>
 
       <div class="icon">

@@ -8,15 +8,24 @@
     <div class="search-bar">
       <el-form :inline="true">
         <el-form-item label="时间">
-          <el-select v-model="dateRange" placeholder="请选择时间范围" @change="handleDateChange">
-            <el-option label="近3个月" value="3" />
-            <el-option label="近6个月" value="6" />
-            <el-option label="近9个月" value="9" />
-            <el-option label="近12个月" value="12" />
-            <el-option label="近18个月" value="18" />
-            <el-option label="近24个月" value="24" />
-            <el-option label="全部" value="" />
-          </el-select>
+          <div class="date-picker-group">
+            <el-date-picker
+              v-model="startDate"
+              type="month"
+              placeholder="请选择开始年月"
+              value-format="YYYY-MM" 
+              class="custom-height"
+              @change="handleDateChange"
+            />
+            <el-date-picker
+              v-model="endDate"
+              type="month"
+              placeholder="请选择结束年月" 
+              value-format="YYYY-MM" 
+              class="custom-height"
+              @change="handleDateChange"
+            />
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -43,6 +52,7 @@
         :key="item.month" 
         :data-id="item.month"
         class="list-item"
+        @click="handleItemClick(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ item.month }}</span>
@@ -72,22 +82,29 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Loading } from '@element-plus/icons-vue'
 import { postRequest } from "../../utils/api"
+import dayjs from 'dayjs' 
 
 const router = useRouter()
 const accountList = ref([])
-const dateRange = ref('12')
+const startDate = ref('')  
+const endDate = ref('')  
 const totalIncome = ref(0)
 const totalPay = ref(0)
 const loading = ref(false)
 
 onMounted(async () => {
+  startDate.value = dayjs().subtract(11, 'month').format('YYYY-MM')
+  endDate.value = dayjs().format('YYYY-MM')
   await loadData(true)
 })
 
 const loadData = async (isRefresh = false) => {
   try {
     loading.value = true
-    const params = { dateRange: dateRange.value }
+    const params = { 
+      startDate: startDate.value + '-01',
+      endDate: endDate.value + '-' + dayjs(endDate.value).daysInMonth()
+    }
     const resp = await postRequest('/version/ht/account/accountTotal', params)
     if (resp?.data?.code === 0 && resp.data.data) {
       accountList.value = resp.data.data
@@ -105,17 +122,26 @@ const loadData = async (isRefresh = false) => {
   }
 }
 
-const handleDateChange = (val) => {
-  dateRange.value = val
+const handleDateChange = () => {
   loadData(true)
 }
 
 const handleBack = () => {
   router.back()
 }
+
+const handleItemClick = (item) => {
+  localStorage.setItem('accountSearchParams', JSON.stringify({
+    startDate: item.month + '-01',
+    endDate: item.month + '-' + dayjs(item.month).daysInMonth()
+  }))
+  router.push('/account')
+}
+
 </script>
 
 <style scoped>
+
 .page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
@@ -236,17 +262,25 @@ const handleBack = () => {
   color: #303133;
 }
 
-:deep(.el-select) {
-  width: 100%;
+:deep(.el-input__wrapper) {
+  width: 80px !important;
 }
 
-:deep(.el-form--inline) {
-  width: 100%;
-  display: block;
+.date-picker-group {
+  display: flex;
+  gap: 10px;
 }
 
-:deep(.el-form--inline .el-form-item) {
-  width: 100%;
-  margin-right: 0;
+:deep(.date-picker-group .el-input) {
+  width: 150px !important;
 }
+
+:deep(.date-picker-group .el-input__wrapper) {
+  width: 150px !important;
+}
+
+:deep(.date-picker-group .el-input__inner) {
+  padding: 0 8px;
+}
+
 </style>

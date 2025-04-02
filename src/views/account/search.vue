@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>高级搜索</h1>
+      <h1>更多搜索</h1>
       <el-icon class="header-icon" @click="handleSearch"><Search /></el-icon>
     </div>
 
