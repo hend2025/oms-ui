@@ -1,125 +1,93 @@
 
 <template>
-  <div id="app">
-    <!-- 顶部标题栏 -->
+  <div class="page-container">
     <div class="header">
       <div class="welcome">欢迎使用！</div>
       <div class="system-title">销售订单管理系统</div>
     </div>
 
     <div class="function-icons">
-
-      <div class="icon">
-        <router-link to="/stoin">
-          <img src="../assets/hxjl.png" />
-        </router-link>
-          <p>物料入库</p>
+      <div 
+        v-for="menu in menuList" 
+        :key="menu.path" 
+        class="icon"
+        @click="handleMenuClick(menu)"
+      >
+        <img :src="menu.icon" />
+        <p>{{ menu.name }}</p>
       </div>
-
-      <div class="icon">
-        <router-link to="/order">
-          <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>订单出库</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/account">
-          <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>收支记账</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/account/check">
-           <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>销售对账</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/account/total">
-           <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>销售总账</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/category?busiType=1">
-           <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>物料种类</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/category?busiType=2">
-           <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>烟花种类</p>
-      </div>
-
-      <div class="icon">
-        <router-link to="/org">
-           <img src="../assets/hxjl.png" />
-        </router-link>
-        <p>客户管理</p>
-      </div>
-
-      <div class="icon">
-           <img src="../assets/hxjl.png" />
-        <p>账号设置</p>
-      </div>
-      
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-const router = useRouter()
-</script>
-<style scoped>
+import hxjlIcon from '../assets/hxjl.png'
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
+const router = useRouter()
+
+// const menuList = ref([
+//   { name: '功能-1', path: '/stoin', icon: hxjlIcon },
+//   { name: '功能-2', path: '/order', icon: hxjlIcon },
+//   { name: '功能-3', path: '/account', icon: hxjlIcon },
+//   { name: '功能-4', path: '/account/check', icon: hxjlIcon },
+//   { name: '功能-5', path: '/account/total', icon: hxjlIcon },
+//   { name: '功能-6', path: '/category', query: { busiType: '1' }, icon: hxjlIcon },
+//   { name: '功能-7', path: '/category', query: { busiType: '2' }, icon: hxjlIcon },
+//   { name: '功能-8', path: '/org', icon: hxjlIcon },
+//   { name: '功能-9', path: '', icon: hxjlIcon }
+// ])
+
+const menuList = ref([
+  { name: '物料入库', path: '/stoin', icon: hxjlIcon },
+  { name: '订单出库', path: '/order', icon: hxjlIcon },
+  { name: '收支记账', path: '/account', icon: hxjlIcon },
+  { name: '销售对账', path: '/account/check', icon: hxjlIcon },
+  { name: '销售总账', path: '/account/total', icon: hxjlIcon },
+  { name: '物料种类', path: '/category', query: { busiType: '1' }, icon: hxjlIcon },
+  { name: '烟花种类', path: '/category', query: { busiType: '2' }, icon: hxjlIcon },
+  { name: '客户管理', path: '/org', icon: hxjlIcon },
+  { name: '账号设置', path: '', icon: hxjlIcon }
+])
+
+const handleMenuClick = (menu) => {
+  if (!menu.path) return
+  router.push({
+    path: menu.path,
+    query: { ...menu.query, title: menu.name }
+  })
+}
+</script>
+
+<style scoped>
+.page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
 
 .header {
   background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
-  padding: 30px 20px 30px 20px;
+  padding: 30px 20px;
   color: white;
 }
 
 .welcome {
-  text-align: left;
-  font-size: 32px; 
-  margin-bottom: 6px; 
-  font-family: 'YouYuan', 'STZhongsong', sans-serif;
+  font-size: 32px;
+  margin-bottom: 6px;
   font-weight: bold;
 }
 
 .system-title {
   padding-top: 10px;
   text-align: center;
-  font-size: 36px; 
+  font-size: 36px;
   font-weight: bold;
-  font-family: 'YouYuan', 'STZhongsong', sans-serif;
   background: linear-gradient(to right, #fff, #e6f3ff);
   -webkit-background-clip: text;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: transparent;
 }
 
-.header h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-/* 功能图标区域样式 */
 .function-icons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -127,19 +95,16 @@ body {
   padding: 10px;
 }
 
-/* 单个功能图标样式 */
 .icon {
   cursor: pointer;
   text-align: center;
 }
 
-/* 功能图标图片样式 */
 .icon img {
   width: 80px;
   height: 80px;
 }
 
-/* 功能图标文字样式 */
 .icon p {
   margin-top: -10px;
   font-size: 14px;

@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>订单出库</h1>
+      <h1>{{ route.query.title}}</h1>
       <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -37,10 +37,10 @@
         </div>
         <div class="item-info">
           <span>数量：{{ item.orderCnt }}</span>
-          <span>金额：{{ item.money }}元</span>
+          <span>金额：{{ item.money }}</span>
         </div>
         <div class="item-info">
-          <span>供货商：{{ item.orgName }}</span>
+          <span>{{ item.orgName }}</span>
         </div>
       </div>
 
@@ -59,12 +59,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue' 
-import { useRouter } from 'vue-router'
+import { useRouter,useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
 import { postRequest } from "../../utils/api"
 import dayjs from 'dayjs' 
 
+const route = useRoute() 
 const router = useRouter()
 const orderList = ref([])
 const pageState = reactive({

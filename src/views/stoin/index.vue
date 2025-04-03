@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>物料入库</h1>
+      <h1>{{ route.query.title }}</h1>
       <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -29,7 +29,6 @@
         :key="item.stoinId" 
         :data-id="item.stoinId"
         class="list-item"
-        @click="handleEdit(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ item.categoryName }}</span>
@@ -37,10 +36,16 @@
         </div>
         <div class="item-info">
           <span>数量：{{ item.stoinCnt }}</span>
-          <span>金额：{{ item.money }}元</span>
+          <span>金额：{{ item.money }}</span>
         </div>
         <div class="item-info">
-          <span>供货商：{{ item.orgName }}</span>
+          <span>{{ item.orgName }}</span>
+          <el-button  link type="primary" 
+              class="edit-button"
+              @click.stop="handleEdit(item)"
+            >
+              <el-icon class="edit-icon"><Edit /></el-icon>修改
+            </el-button>
         </div>
       </div>
 
@@ -58,14 +63,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue' 
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
-import { postRequest, getRequest } from "../../utils/api"  // 修改这行，添加一个层级
 
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue' 
+import { useRouter,useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft, Plus, Search, Loading, Edit } from '@element-plus/icons-vue'
+import { postRequest, getRequest } from "../../utils/api" 
 import dayjs from 'dayjs' 
 
+const route = useRoute() 
 const router = useRouter()
 const stoinList = ref([])
 const pageState = reactive({
@@ -367,5 +373,14 @@ const handleReset = () => {
   margin: 0;
 }
 
+.edit-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-icon {
+  font-size: 16px;
+}
 
 </style>

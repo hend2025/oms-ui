@@ -31,10 +31,10 @@
           </div>
         </el-form-item>
 
-      <el-form-item label="烟花名称" prop="categoryName" required>
+      <el-form-item label="烟花种类" prop="categoryName" required>
           <div class="category-select" @click="handleCategoryClick">
             <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
-            <span v-else class="placeholder">请选择物料分类</span>
+            <span v-else class="placeholder">请选择烟花种类</span>
             <el-icon><ArrowRight /></el-icon>
           </div>
         </el-form-item>
@@ -110,7 +110,7 @@ const rules = {
     { required: true, message: '请选择订单日期', trigger: 'change' }
   ],
   categoryName: [
-    { required: true, message: '请选择烟花名称', trigger: 'change' }
+    { required: true, message: '请选择烟花种类', trigger: 'change' }
   ],
   orgName: [
     { required: true, message: '请选择客户名称', trigger: 'change' }
@@ -130,7 +130,7 @@ const handleCategoryClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/category',
-    query: { select: 'true', from: 'matter', busiType:  '2' }
+    query: { select: 'true', from: 'matter', busiType:  '2' , title: '选择烟花种类'}
   })
 
 }
@@ -139,7 +139,7 @@ const handleOrgClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/org',
-    query: { select: 'true', from: 'order' }
+    query: { select: 'true', from: 'order', title: '选择客户'}
   })
 }
 

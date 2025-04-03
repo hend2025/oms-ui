@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>客户管理</h1>
+      <h1>{{ route.query.title }}</h1>
       <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 

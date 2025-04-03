@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>收支记账</h1>
+      <h1>{{ route.query.title }}</h1>
       <el-icon class="header-icon" @click="handleAdd"><Plus /></el-icon>
     </div>
 
@@ -12,15 +12,15 @@
               v-model="pageState.startDate"
               type="day"
               placeholder="请选择开始年月"
-              value-format="YYYY-MM-DD" 
-              class="custom-height"
+              value-format="YYYY-MM-DD"
+              @change="loadData(true)"
             />
             <el-date-picker
               v-model="pageState.endDate"
               type="day"
-              placeholder="请选择结束年月" 
-              value-format="YYYY-MM-DD" 
-              class="custom-height"
+              placeholder="请选择结束年月"
+              value-format="YYYY-MM-DD"
+              @change="loadData(true)"
             />
       </div>
       <div class="search-row">
@@ -39,11 +39,10 @@
     </div>
 
     <div class="list-area">
-      <div v-for="item in accountList" 
+      <div v-for="item in pageList" 
         :key="item.accountId" 
         :data-id="item.accountId"
         class="list-item"
-        @click="handleEdit(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ formatDate(item.accountDate) }}</span>
@@ -58,13 +57,19 @@
         </div>
         <div class="item-info">
           <span>{{ item.orgName }}</span>
+          <el-button  link type="primary" 
+              class="edit-button"
+              @click.stop="handleEdit(item)"
+            >
+              <el-icon class="edit-icon"><Edit /></el-icon>修改
+            </el-button>
         </div>  
       </div>
 
       <div v-if="pageState.loading" class="loading-text">
         <el-icon class="loading"><Loading /></el-icon> 加载中...
       </div>
-      <div v-else-if="accountList.length === 0" class="empty-text">
+      <div v-else-if="pageList.length === 0" class="empty-text">
         暂无数据
       </div>
       <div v-else-if="!pageState.hasMore" class="no-more-text">
@@ -76,14 +81,15 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue' 
-import { useRouter } from 'vue-router'
+import { useRouter,useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Plus, Search, Loading } from '@element-plus/icons-vue'
+import { ArrowLeft, Plus, Search, Loading, Edit } from '@element-plus/icons-vue'
 import { postRequest } from "../../utils/api"
 import dayjs from 'dayjs' 
 
+const route = useRoute() 
 const router = useRouter()
-const accountList = ref([])
+const pageList = ref([])
 const pageState = reactive({
   loading: false,
   pageNum: 1,
@@ -96,13 +102,8 @@ const pageState = reactive({
   orgId: ''
 })
 
-const formatDate = (date) => {
-  if (!date) return ''
-  return dayjs(date).format('YYYY-MM-DD')
-}
-
 onMounted(async () => {
-  const savedState = localStorage.getItem('accountListState')
+  const savedState = localStorage.getItem('pageListState')
   if (savedState) {
     const state = JSON.parse(savedState)
     Object.assign(pageState, {
@@ -136,19 +137,26 @@ onMounted(async () => {
           behavior: 'instant'
         })
       }
-      localStorage.removeItem('accountListState')
+      localStorage.removeItem('pageListState')
     })
   } else {
-    const searchParams = localStorage.getItem('accountSearchParams')
+    const searchParams = localStorage.getItem('searchParams')
     if (searchParams) {
       const params = JSON.parse(searchParams)
       Object.assign(pageState, params)
-      localStorage.removeItem('accountSearchParams')
+      localStorage.removeItem('searchParams')
+    }
+
+    const selectedOrg = localStorage.getItem('selectedOrg')
+    if (selectedOrg) {
+      const params = JSON.parse(selectedOrg)
+      pageState.searchKey = params.orgName || ''
+      localStorage.removeItem('selectedOrg')
     }
     await loadData(true)
   }
   window.addEventListener('scroll', handleScroll)
-})
+}) 
 
 const loadData = async (isRefresh = false) => {
   if (pageState.loading || (!isRefresh && !pageState.hasMore)) return
@@ -174,11 +182,11 @@ const loadData = async (isRefresh = false) => {
     if (resp?.data?.code === 0 && resp.data.data) {
       const { records = [], total = 0 } = resp.data.data
       if (isRefresh) {
-        accountList.value = records
+        pageList.value = records
       } else {
-        accountList.value.push(...records)
+        pageList.value.push(...records)
       }
-      pageState.hasMore = accountList.value.length < total
+      pageState.hasMore = pageList.value.length < total
       if (pageState.hasMore) pageState.pageNum++
     } else {
       ElMessage.error(resp?.data?.message || '获取数据失败')
@@ -190,45 +198,27 @@ const loadData = async (isRefresh = false) => {
   }
 }
 
-const handleSearch = () => {
-  loadData(true)
-}
-
-const handleScroll = () => {
-  const scrollTop = document.documentElement.scrollTop
-  const clientHeight = document.documentElement.clientHeight
-  const scrollHeight = document.documentElement.scrollHeight
-  
-  if (scrollTop + clientHeight >= scrollHeight - 50) {
-    loadData()
-  }
-}
-
-const handleBack = () => {
-  router.back()
-}
-
-const handleAdd = () => {
-  router.push('/account/form')
-}
-
 const handleEdit = (item) => {
-  localStorage.setItem('accountListState', JSON.stringify({
+  localStorage.setItem('pageListState', JSON.stringify({
     pageNum: pageState.pageNum,
     searchKey: pageState.searchKey,
     startDate: pageState.startDate,
     endDate: pageState.endDate,
     payType: pageState.payType,
     orgId: pageState.orgId,
-    list: accountList.value,
+    list: pageList.value,
     scrollPosition: document.documentElement.scrollTop || document.body.scrollTop,
     targetId: item.accountId
   }))
   router.push(`/account/form?id=${item.accountId}`)
 }
+ 
+const handleBack = () => {
+  router.back()
+}
 
-const handleMoreSearch = () => {
-  router.push('/account/search')
+const handleAdd = () => {
+  router.push('/account/form')
 }
 
 const handleReset = () => {
@@ -242,9 +232,36 @@ const handleReset = () => {
   loadData(true)
 }
 
+const formatDate = (date) => {
+  if (!date) return ''
+  return dayjs(date).format('YYYY-MM-DD')
+}
+
+const handleScroll = () => {
+  const scrollTop = document.documentElement.scrollTop
+  const clientHeight = document.documentElement.clientHeight
+  const scrollHeight = document.documentElement.scrollHeight
+  if (scrollTop + clientHeight >= scrollHeight - 50) {
+    loadData()
+  }
+}
+
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+const handleOrgSelect = () => {
+  localStorage.setItem('searchParams', JSON.stringify({
+    startDate: pageState.startDate,
+    endDate: pageState.endDate,
+    payType: pageState.payType,
+    orgId: pageState.orgId
+  }))
+  router.push({
+    path: '/org',
+    query: { select: 'true', title: '选择'}
+  })
+}
 </script>
 
 <style scoped>
@@ -437,4 +454,15 @@ onUnmounted(() => {
   background-color: #e8f1ff;
   color: rgb(60, 60, 230);
 }
+
+.edit-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-icon {
+  font-size: 16px;
+}
+
 </style>

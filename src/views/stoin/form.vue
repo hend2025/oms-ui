@@ -13,11 +13,11 @@
         :rules="rules"
         label-width="80px"
       >
-      <el-form-item label="采购日期" prop="stoinDate" required>
+      <el-form-item label="入库日期" prop="stoinDate" required>
         <el-date-picker
           v-model="formData.stoinDate"
           type="date"
-          placeholder="请选择采购日期"
+          placeholder="请选择入库日期"
           value-format="YYYY-MM-DD"
           style="width: 100%"
         />
@@ -107,7 +107,7 @@ const formData = reactive({
 
 const rules = {
   stoinDate: [
-    { required: true, message: '请选择采购日期', trigger: 'change' }
+    { required: true, message: '请选择入库日期', trigger: 'change' }
   ],
   categoryName: [
     { required: true, message: '请选择物料名称', trigger: 'change' }
@@ -130,7 +130,7 @@ const handleCategoryClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/category',
-    query: { select: 'true', from: 'matter', busiType:  '1' }
+    query: { select: 'true', from: 'matter', busiType:  '1' , title: '选择物料'}
   })
 }
 
@@ -138,7 +138,7 @@ const handleOrgClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/org',
-    query: { select: 'true', from: 'stoin' }
+    query: { select: 'true', from: 'stoin' , title: '选择供货商'}
   })
 }
 
@@ -235,7 +235,7 @@ const handleContinueSubmit = async () => {
 }
 
 const handleDelete = () => {
-  ElMessageBox.confirm('确认删除该采购记录吗？', '提示', {
+  ElMessageBox.confirm('确认删除该入库记录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="header">
       <el-icon class="header-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>销售总账</h1>
+      <h1>{{ route.query.title }}</h1>
     </div>
     
     <div class="search-bar">
@@ -64,9 +64,6 @@
           <span>支出：￥{{ item.pay}}</span>
           <span>收入：￥{{ item.inCome}}</span>
         </div>  
-        <div class="item-actions">
-            <el-icon class="arrow-icon"><ArrowRight /></el-icon>
-          </div>
       </div>
 
       <div v-if="loading" class="loading-text">
@@ -81,12 +78,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue' 
-import { useRouter } from 'vue-router'
+import { useRouter,useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Loading,ArrowRight } from '@element-plus/icons-vue'
 import { postRequest } from "../../utils/api"
 import dayjs from 'dayjs' 
 
+const route = useRoute() 
 const router = useRouter()
 const accountList = ref([])
 const startDate = ref('')  

@@ -54,10 +54,6 @@ const routes = [
     component: () => import('../views/account/form.vue')
   },
   {
-    path: '/account/search',
-    component: () => import('../views/account/search.vue')
-  },
-  {
     path: '/account/check',
     component: () => import('../views/account/check.vue')
   },

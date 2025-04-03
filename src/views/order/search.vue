@@ -41,10 +41,10 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="烟花名称" prop="categoryName">
+        <el-form-item label="产品名称" prop="categoryName">
           <div class="category-select" @click="handleCategoryClick">
             <span v-if="formData.categoryName">{{ formData.categoryName }}</span>
-            <span v-else class="placeholder">请选择烟花名称</span>
+            <span v-else class="placeholder">请选择产品名称</span>
             <el-icon><ArrowRight /></el-icon>
           </div>
         </el-form-item>

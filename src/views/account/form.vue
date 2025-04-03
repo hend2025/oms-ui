@@ -88,7 +88,7 @@ const handleOrgClick = () => {
   localStorage.setItem('tempFormData', JSON.stringify(formData))
   router.push({
     path: '/org',
-    query: { select: 'true', from: 'order' }
+    query: { select: 'true', title: '选择'}
   })
 }
 
