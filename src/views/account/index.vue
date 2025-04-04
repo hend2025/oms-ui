@@ -140,6 +140,11 @@ onMounted(async () => {
       localStorage.removeItem('pageListState')
     })
   } else {
+    if( route.query.from === 'total'){
+      pageState.startDate = route.query.startDate;
+      pageState.endDate = route.query.endDate;
+    }
+
     const searchParams = localStorage.getItem('searchParams')
     if (searchParams) {
       const params = JSON.parse(searchParams)

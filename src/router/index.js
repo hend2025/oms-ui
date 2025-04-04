@@ -47,7 +47,7 @@ const routes = [
   },
   {
     path: '/account',
-    component: () => import('../views/account/index.vue')
+    component: () => import('../views/account/index.vue'),
   },
   {
     path: '/account/form',
@@ -56,6 +56,10 @@ const routes = [
   {
     path: '/account/check',
     component: () => import('../views/account/check.vue')
+  },
+  {
+    path: '/account/checkDetail',
+    component: () => import('../views/account/checkDetail.vue'),
   },
   {
     path: '/account/total',

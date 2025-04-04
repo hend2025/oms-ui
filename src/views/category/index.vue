@@ -29,12 +29,10 @@
           <div class="item-info" @click="handleViewSub(item)">   
             <div class="item-name">
               <span class="name-text">{{ item.categoryName }}</span>
-              <span class="code-text" v-if=" item.categoryCode">{{ item.categoryCode }}</span>
-              <span class="code-text" v-else>{{ item.categoryId }}</span>
+              <span class="code-text">{{ item.aliasName }}</span>
             </div>
-            <div class="item-name" v-if="item.childNum === 0">
-              <span class="code-text">简称：{{ item.aliasName }}</span>
-              <span class="code-text">规格：{{ item.param }}</span>
+            <div class="item-name" v-if="item.childNum === 0 && !!item.param ">
+              <span class="code-text">{{ item.param }}</span>
             </div>
           </div> 
           <div class="item-actions" v-if="item.childNum>0">

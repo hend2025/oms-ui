@@ -44,7 +44,7 @@ const menuList = ref([
   { name: '订单出库', path: '/order', icon: hxjlIcon },
   { name: '收支记账', path: '/account', icon: hxjlIcon },
   { name: '销售对账', path: '/account/check', icon: hxjlIcon },
-  { name: '销售总账', path: '/account/total', icon: hxjlIcon },
+  { name: '财务总账', path: '/account/total', icon: hxjlIcon },
   { name: '物料种类', path: '/category', query: { busiType: '1' }, icon: hxjlIcon },
   { name: '烟花种类', path: '/category', query: { busiType: '2' }, icon: hxjlIcon },
   { name: '客户管理', path: '/org', icon: hxjlIcon },

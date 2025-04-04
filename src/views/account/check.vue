@@ -42,8 +42,7 @@
       <div v-for="item in accountList" 
         :key="item.orgId" 
         :data-id="item.orgId"
-        class="list-item"
-      >
+        class="list-item" @click="handleItemClick(item)">
         <div class="item-header">
           <span class="item-title">{{ item.orgName }}</span>
           <div class="amount-wrapper">
@@ -124,9 +123,7 @@ const loadData = async (isRefresh = false) => {
      
     const resp = await postRequest('/version/ht/account/accountSum', params)
     if (resp?.data?.code === 0 && resp.data.data) {
-    
       const records = resp.data.data
-      console.log(records)
       const total = records.length
       if (isRefresh) {
         accountList.value = records
@@ -181,6 +178,23 @@ const handleOrgSelect = () => {
   })
 }
 
+const handleItemClick = (item) => {
+  router.push({
+    path: '/account/checkDetail',
+    query: { 
+      title: '对账明细',
+      orgId: item.orgId,
+      orgName: item.orgName,
+      startDate: pageState.startDate + '-01',
+      endDate: pageState.endDate + '-' + dayjs(pageState.endDate).daysInMonth(),
+      stoinMoney: item.payable,
+      stoinPay: item.paid,
+      orderMoney: item.receivable,
+      orderPay: item.received,
+      balance: item.balance,
+    }
+  })
+}
 </script>
 
 <style scoped>

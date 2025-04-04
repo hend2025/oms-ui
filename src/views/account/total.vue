@@ -137,6 +137,14 @@ const handleItemClick = (item) => {
     endDate: item.month + '-' + dayjs(item.month).daysInMonth()
   }))
   router.push('/account')
+  router.push({
+    path: '/account',
+    query: {   
+        from: 'total',
+        startDate: item.month + '-01',
+        endDate: item.month + '-' + dayjs(item.month).daysInMonth() 
+      }
+  })
 }
 
 </script>
