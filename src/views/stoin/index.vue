@@ -29,6 +29,7 @@
         :key="item.stoinId" 
         :data-id="item.stoinId"
         class="list-item"
+        @click="handleEdit(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ item.categoryName }}</span>
@@ -39,13 +40,7 @@
           <span>金额：{{ item.money }}</span>
         </div>
         <div class="item-info">
-          <span>{{ item.orgName }}</span>
-          <el-button  link type="primary" 
-              class="edit-button"
-              @click.stop="handleEdit(item)"
-            >
-              <el-icon class="edit-icon"><Edit /></el-icon>修改
-            </el-button>
+          <span>供货商：{{ item.orgName }}</span>
         </div>
       </div>
 

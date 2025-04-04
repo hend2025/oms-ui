@@ -12,28 +12,24 @@
         <el-form-item label="节点类型" prop="nodeType" required>
           <el-radio-group v-model="formData.nodeType">
             <el-radio label="1">分类</el-radio>
-            <el-radio label="2">实体</el-radio>
+            <el-radio label="2">实物</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="上级节点" prop="parentName" required>
+        <el-form-item label="上级分类" prop="parentName" required>
           <el-input v-model="formData.parentName" disabled />
         </el-form-item>
                       
-        <el-form-item label="节点名称" prop="categoryName" required>
-          <el-input v-model="formData.categoryName" placeholder="请输入节点名称" />
+        <el-form-item label="分类名称" prop="categoryName" required>
+          <el-input v-model="formData.categoryName" placeholder="请输入分类名称" />
         </el-form-item>
 
-        <el-form-item label="规格参数" prop="param" >
+        <el-form-item v-if="formData.nodeType === '2'" label="规格参数" prop="param">
           <el-input v-model="formData.param" placeholder="请输入规格参数" />
         </el-form-item>
-        
-        <el-form-item label="别名简称" prop="aliasName" >
+
+        <el-form-item v-if="formData.nodeType === '2'" label="别名简称" prop="aliasName">
           <el-input v-model="formData.aliasName" placeholder="请输入别名简称" />
-        </el-form-item>
-        
-        <el-form-item label="拼音简称" prop="pinyin" >
-          <el-input v-model="formData.pinyin" placeholder="请输入拼音简称" />
         </el-form-item>
 
         <div class="form-footer">
@@ -75,7 +71,7 @@ const handleSave = async () => {
   try {
     // 表单验证
     if (!formData.value.categoryName) {
-      ElMessage.warning('请输入节点名称')
+      ElMessage.warning('请输入分类名称')
       return
     }
     if (!formData.value.nodeType) {

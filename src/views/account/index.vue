@@ -43,26 +43,24 @@
         :key="item.accountId" 
         :data-id="item.accountId"
         class="list-item"
+        @click="handleEdit(item)"
       >
         <div class="item-header">
           <span class="item-title">{{ formatDate(item.accountDate) }}</span>
           <div class="amount-wrapper">
             <span class="pay-type-tag" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
-              {{ item.payType === '1' ? '收入' : '支出' }}
+              {{ item.payType === '1' ? '收款' : '付款' }}
             </span>
-            <span class="item-title" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
-              ￥{{ item.money }}
+            <span class="item-title">
+              <span class="item-title" :class="{ 'income': item.payType === '1', 'expense': item.payType === '2' }">
+                ￥{{ item.money }}
+            </span>
+             
             </span>
           </div>
         </div>
         <div class="item-info">
           <span>{{ item.orgName }}</span>
-          <el-button  link type="primary" 
-              class="edit-button"
-              @click.stop="handleEdit(item)"
-            >
-              <el-icon class="edit-icon"><Edit /></el-icon>修改
-            </el-button>
         </div>  
       </div>
 
@@ -448,16 +446,15 @@ const handleOrgSelect = () => {
   border-radius: 4px;
   font-size: 12px;
   font-weight: normal;
+  color: #303133;  /* 统一使用黑色 */
 }
 
 .pay-type-tag.income {
   background-color: #ffebeb;
-  color: #eb2424;
 }
 
 .pay-type-tag.expense {
   background-color: #e8f1ff;
-  color: rgb(60, 60, 230);
 }
 
 .edit-button {

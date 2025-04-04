@@ -63,8 +63,8 @@
                 <span class="item-title">￥{{item.money  }}</span>
               </div>
               <div class="item-info">
+                <span>日期：{{  formatDate(item.stoinDate) }}</span>
                 <span>数量：{{ item.stoinCnt}}</span>
-                <span>{{  formatDate(item.stoinDate) }}</span>
               </div>  
             </div>
 
@@ -88,8 +88,8 @@
                 <span class="item-title">￥{{item.money  }}</span>
               </div>
               <div class="item-info">
+                <span>日期：{{  formatDate(item.orderDate) }}</span>
                 <span>数量：{{ item.orderCnt}}</span>
-                <span>{{  formatDate(item.orderDate) }}</span>
               </div>  
             </div>
 

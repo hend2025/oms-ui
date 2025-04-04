@@ -32,15 +32,15 @@
 
     <div class="summary-card">
       <div class="summary-item">
-        <div class="summary-label">总收入</div>
+        <div class="summary-label">总收款</div>
         <div class="summary-value income">￥{{ totalIncome }}</div>
       </div>
       <div class="summary-item">
-        <div class="summary-label">总支出</div>
+        <div class="summary-label">总付款</div>
         <div class="summary-value expense">￥{{ totalPay }}</div>
       </div>
       <div class="summary-item">
-        <div class="summary-label">结余</div>
+        <div class="summary-label">总结余</div>
         <div class="summary-value" :class="{ 'income': totalIncome - totalPay > 0, 'expense': totalIncome - totalPay < 0 }">
           ￥{{ totalIncome - totalPay }}
         </div>
@@ -61,8 +61,8 @@
           </span>
         </div>
         <div class="item-info">
-          <span>支出：￥{{ item.pay}}</span>
-          <span>收入：￥{{ item.inCome}}</span>
+          <span>收款：￥{{ item.inCome}}</span>
+          <span>付款：￥{{ item.pay}}</span>
         </div>  
       </div>
 

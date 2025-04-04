@@ -33,14 +33,14 @@
       >
         <div class="item-header">
           <span class="item-title">{{ item.categoryName }}</span>
-          <span class="item-code">{{ formatDate(item.orderDate) }}</span>
+          <span class="item-title">{{ formatDate(item.orderDate) }}</span>
         </div>
         <div class="item-info">
           <span>数量：{{ item.orderCnt }}</span>
           <span>金额：{{ item.money }}</span>
         </div>
         <div class="item-info">
-          <span>{{ item.orgName }}</span>
+          <span>客户：{{ item.orgName }}</span>
         </div>
       </div>
 
