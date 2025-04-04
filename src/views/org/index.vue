@@ -1,10 +1,10 @@
 <template>
   <div class="page-container">
-    <div class="header">
-      <el-icon class="back-icon" @click="handleBack"><ArrowLeft /></el-icon>
-      <h1>{{ route.query.title }}</h1>
-      <el-icon class="add-icon" @click="handleAdd"><Plus /></el-icon>
-    </div>
+    <PageHeader 
+      :title="route.query.title" 
+      :show-add="true"
+      @add="handleAdd" 
+    />
 
     <div class="search-bar">
       <el-input
@@ -61,10 +61,10 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'  
-import { Search, ArrowLeft, Plus, Loading } from '@element-plus/icons-vue' 
+import { Search, Loading } from '@element-plus/icons-vue' 
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { postRequest, getRequest } from "../../utils/api"
+import { postRequest } from "../../utils/api"
 
 const router = useRouter()
 const route = useRoute()  
@@ -196,35 +196,17 @@ const handleScroll = () => {
 </script>
 
 <style scoped>
+
 .page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
-.header {
-  background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
-  padding: 16px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  position: fixed; 
-  top: 0; left: 0; right: 0;       
-  z-index: 100;   
-}
-.header h1 { margin: 0; font-size: 18px; font-weight: 500; }
-.back-icon, .add-icon {
-  font-size: 20px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.back-icon:hover, .add-icon:hover { transform: scale(1.1); }
 
 .search-bar {
   padding: 15px 15px 10px 15px;
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  margin-top: 50px;  
+  margin-top: 0px;  
 }
 
 :deep(.search-input .el-input-group__append) {

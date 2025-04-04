@@ -1,10 +1,11 @@
 <template>
-  <div class="form-edit">
-    <div class="header">
-      <el-icon class="back-icon" @click="router.back()"><ArrowLeft /></el-icon>
-      <h1>{{ isEdit ? '修改' : '新增' }}客户</h1>
-      <el-icon v-if="isEdit" class="delete-icon" @click="handleDelete"><Delete /></el-icon>
-    </div>
+  <div class="page-container">
+
+    <PageHeader 
+      :title="isEdit ? '修改' : '新增'" 
+      :show-delete="isEdit ? true : false"
+      @delete="handleDelete" 
+    />
 
     <div class="form-container">
       <el-form 
@@ -53,7 +54,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft, Delete } from '@element-plus/icons-vue'
 import { postRequest, getRequest } from "../../utils/api"
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -139,43 +139,16 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-
-.form-edit {
+.page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
 
-.header {
-  background: linear-gradient(135deg, #2d6eb2 0%, #75b2f7 100%);
-  padding: 16px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  top: 0;         
-  left: 0;       
-  right: 0;       
-  z-index: 100;   
-}
-
-.header h1 {
-  margin: 0 auto;
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.back-icon {
-  font-size: 20px;
-  cursor: pointer;
-  position: absolute;
-}
-
 .form-container {
-  padding: 20px 15px 10px 10px;
-  background: #fff;
+  padding: 20px;
   margin: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
+  background: #fff;
 } 
 
 .form-footer {
@@ -183,29 +156,13 @@ const handleDelete = async () => {
   text-align: center;
 }
 
-.delete-icon {
-  font-size: 20px;
-  cursor: pointer;
-  position: absolute;
-  right: 20px;
-  color: #fff;
-}
-
-:deep(.el-input__wrapper) {
-  height: 42px;
-}
-
-:deep(.el-input__inner) {
-  height: 42px;
-  line-height: 42px;
-  font-size: 14px; 
-}
-
 :deep(.el-select) {
   width: 100%;
 }
 
+:deep(.el-input__inner),
 :deep(.el-select__wrapper) {
   height: 42px;
 }
+ 
 </style>
