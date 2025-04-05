@@ -85,13 +85,11 @@ onMounted(async () => {
   const id = route.query.id
   if (id) {
     isEdit.value = true
-    try {
-      const resp = await getRequest(`/version/ht/org/info/${id}`)
-      if (resp?.data?.code === 0) {
-        Object.assign(formData, resp.data.data)
-      }
-    } catch (error) {
-      console.error('获取详情失败:', error)
+    const resp = await getRequest(`/version/ht/org/info/${id}`)
+    if (resp?.data?.code === 0) {
+      Object.assign(formData, resp.data.data)
+    } else {
+      ElMessage.error(resp?.data?.message || '查询失败')
     }
   }
 })
@@ -100,41 +98,31 @@ const handleSubmit = async () => {
   if (!formRef.value) return
   await formRef.value.validate(async (valid) => {
     if (valid) {
-      try {
-        const url = isEdit.value ? '/version/ht/org/update' : '/version/ht/org/save'
-        const resp = await postRequest(url, formData)
-        if (resp?.data?.code === 0) {
-          ElMessage.success('保存成功')
-          router.back()
-        } else {
-          ElMessage.error(resp?.data?.message || '保存失败')
-        }
-      } catch (error) {
-        console.error('保存失败:', error)
-        ElMessage.error('保存失败')
+      const url = isEdit.value ? '/version/ht/org/update' : '/version/ht/org/save'
+      const resp = await postRequest(url, formData)
+      if (resp?.data?.code === 0) {
+        ElMessage.success('保存成功')
+        router.back()
+      } else {
+        ElMessage.error(resp?.data?.message || '保存失败')
       }
     }
   })
 }
 
 const handleDelete = async () => {
-  try {
     await ElMessageBox.confirm('确认删除该客户吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
     const resp = await getRequest(`/version/ht/org/delete/${formData.orgId}`)
     if (resp?.data?.code === 0) {
       ElMessage.success('删除成功')
       router.back()
+    } else {
+        ElMessage.error(resp?.data?.message || '删除失败')
     }
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error)
-    }
-  }
 }
 </script>
 

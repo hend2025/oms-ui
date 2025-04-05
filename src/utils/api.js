@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 export const postRequest = (url, params={pageNum:1,pageSize:10}) => {
   return axios({
@@ -10,6 +11,11 @@ export const postRequest = (url, params={pageNum:1,pageSize:10}) => {
       pageNum: params.pageNum,
       pageSize: params.pageSize
     }
+  }).catch(error => {
+    if (error.response?.status === 500) {
+      ElMessage.error('服务器内部错误')
+    }
+    return Promise.reject(error)
   })
 }
 
@@ -23,6 +29,11 @@ export const getRequest = (url, params={pageNum:1,pageSize:10}) => {
       pageNum: params.pageNum,
       pageSize: params.pageSize
     }
+  }).catch(error => {
+    if (error.response?.status === 500) {
+      ElMessage.error('服务器内部错误')
+    }
+    return Promise.reject(error)
   })
 }
 
