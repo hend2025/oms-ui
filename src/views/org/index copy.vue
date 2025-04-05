@@ -60,12 +60,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'  
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'  
 import { useRouter, useRoute } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue' 
 import { ElMessage } from 'element-plus'
 import { postRequest } from "../../utils/api"
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
 
 const router = useRouter()
 const route = useRoute()  
@@ -148,12 +147,6 @@ const handleReset = () => {
   handleSearch()
 }
 
-const { scrollToTarget } = useInfiniteScroll({
-  loading: pageState.loading,
-  hasMore: pageState.hasMore,
-  fetchData: fetchPageList
-})
-
 onMounted(async () => {
   const savedState = localStorage.getItem('pageListState')
   if (savedState) {
@@ -161,7 +154,7 @@ onMounted(async () => {
     pageList.value = state.pageList
     Object.assign(pageState, state.pageState) 
     if (state.targetId) {
-      await scrollToTarget(state.targetId)
+      await loadUntilTarget(state.targetId)
     } else {
       await fetchPageList()
     }
@@ -169,8 +162,27 @@ onMounted(async () => {
   } else {
     await fetchPageList()
   }
+  window.addEventListener('scroll', handleScroll)
 })
- 
+
+onUnmounted(() => window.removeEventListener('scroll', handleScroll))
+
+const loadUntilTarget = async (targetId) => {
+      nextTick(() => {
+        const targetElement = document.querySelector(`[data-id="${targetId}"]`)
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+        }
+      })
+    }
+
+const handleScroll = () => {
+  const { scrollHeight, scrollTop, clientHeight } = document.documentElement
+  if (!pageState.loading && pageState.hasMore && (scrollHeight - scrollTop - clientHeight) <= 50) {
+    fetchPageList()
+  }
+}
+
 </script>
 
 <style scoped>

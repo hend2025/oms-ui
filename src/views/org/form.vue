@@ -130,11 +130,12 @@ const handleDelete = async () => {
 .page-container {
   min-height: 100vh;
   background-color: #f5f7fa;
+  padding-top: 48px;
 }
 
 .form-container {
   padding: 20px;
-  margin: 10px;
+  margin: 20px 10px;
   border-radius: 10px;
   background: #fff;
 } 
