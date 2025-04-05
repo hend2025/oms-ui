@@ -22,39 +22,30 @@
       </el-input>
     </div>
  
-    <div class="list-area">
-      <div v-for="item in pageList" 
-        :key="item.orgId" 
-        :data-id="item.orgId"
-        class="list-item"
-        @click="handleEdit(item)"
-      >
-        <div class="item-header">
-          <span class="item-name">{{ item.orgName }}</span>
-          <span class="item-name">{{ item.orgCode }}</span>
-        </div>
-        <div class="item-content">
-          <div class="item-info">
-            <span>联系人：{{ item.conerName || '-' }}</span>
-            <span>电话：{{ item.conerTel || '-' }}</span>
+    <PageList
+      :list="pageList"
+      :loading="pageState.loading"
+      :has-more="pageState.hasMore"
+      key-field="orgId"
+    >
+      <template #item="{ item }">
+        <div class="list-item" @click="handleEdit(item)">
+          <div class="item-header">
+            <span class="item-name">{{ item.orgName }}</span>
+            <span class="item-name">{{ item.orgCode }}</span>
           </div>
-          <div class="item-info">
-            <span>地址：{{ item.addr || '-' }}</span>
+          <div class="item-content">
+            <div class="item-info">
+              <span>联系人：{{ item.conerName || '-' }}</span>
+              <span>电话：{{ item.conerTel || '-' }}</span>
+            </div>
+            <div class="item-info">
+              <span>地址：{{ item.addr || '-' }}</span>
+            </div>
           </div>
         </div>
-      </div> 
-    </div>     
-
-    <div v-if="pageState.loading" class="loading-text">
-      <el-icon class="loading"><Loading /></el-icon>
-      加载中...
-    </div>
-    <div v-if="!pageState.loading && !pageState.hasMore && pageList.length > 0" class="no-more-text">
-      没有更多数据了
-    </div>
-    <div v-if="!pageState.loading && pageList.length === 0" class="empty-text">
-      暂无数据
-    </div>
+      </template>
+    </PageList>
 
   </div>
 </template>
@@ -66,6 +57,7 @@ import { Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { postRequest } from "../../utils/api"
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
+import PageList from '../../components/PageList.vue'
 
 const router = useRouter()
 const route = useRoute()  
