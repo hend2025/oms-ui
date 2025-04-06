@@ -15,7 +15,10 @@ const routes = [
   },
   {
     path: '/org',
-    component: () => import('../views/org/index.vue')
+    component: () => import('../views/org/index.vue'),
+    meta: {
+      keepAlive: true
+    }
   },
   {
     path: '/org/form',

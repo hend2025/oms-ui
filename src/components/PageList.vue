@@ -6,8 +6,9 @@
         :key="item[keyField]"
         :data-id="item[keyField]"
         class="list-item-wrapper"
+        @click="savePageState(item)"
       >
-      <slot name="item" :item="item"></slot>
+        <slot name="item" :item="item"></slot>
       </div>
     </div>
 
@@ -26,25 +27,130 @@
 </template>
 
 <script setup>
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 
-defineProps({
-  list: {
-    type: Array,
-    default: () => []
+const props = defineProps({
+  fetchApi: {
+    type: Function,
+    required: true
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  hasMore: {
-    type: Boolean,
-    default: true
+  queryParams: {
+    type: Object,
+    default: () => ({})
   },
   keyField: {
     type: String,
     default: 'id'
   }
+})
+
+const emit = defineEmits(['update:list'])
+
+const list = ref([])
+const pageState = reactive({
+  loading: false,
+  hasMore: true,
+  pageNum: 1,
+  pageSize: 10,
+  total: 0,
+})
+
+// 监听查询参数变化
+watch(() => props.queryParams, () => {
+  refresh()
+}, { deep: true })
+
+const fetchData = async () => {
+  if (pageState.loading || !pageState.hasMore) return
+  try {
+    pageState.loading = true
+    const params = {
+      pageNum: pageState.pageNum,
+      pageSize: pageState.pageSize,
+      ...props.queryParams
+    }
+    const resp = await props.fetchApi(params)
+    if (resp?.data?.code === 0 && resp.data.data) {
+      const { records = [], total = 0 } = resp.data.data
+      pageState.total = total
+      const newList = pageState.pageNum === 1 ? records : [...list.value, ...records]
+      list.value = newList
+      emit('update:list', newList)  // 向父组件同步数据
+      pageState.hasMore = list.value.length < total
+      if (pageState.hasMore) pageState.pageNum++
+    } else {
+      ElMessage.error(resp?.data?.message || '获取数据失败')
+    }
+  } catch (error) {
+    console.error('获取列表失败:', error)
+    ElMessage.error('获取数据失败')
+    pageState.hasMore = false
+  } finally {
+    pageState.loading = false
+  }
+}
+
+const refresh = () => {
+  pageState.pageNum = 1
+  pageState.hasMore = true
+  list.value = []
+  emit('update:list', [])
+  fetchData()
+}
+
+// 滚动加载
+const handleScroll = () => {
+  const { scrollHeight, scrollTop, clientHeight } = document.documentElement
+  if (!pageState.loading && pageState.hasMore && (scrollHeight - scrollTop - clientHeight) <= 50) {
+    fetchData()
+  }
+}
+
+// 滚动到目标位置
+const scrollToTarget = async (targetId) => {
+  const targetElement = document.querySelector(`[data-id="${targetId}"]`)
+  if (targetElement) {
+    targetElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+  }
+}
+
+const savePageState = (item) => {
+  localStorage.setItem('pageListState', JSON.stringify({
+      targetId: item[props.keyField],
+      pageState: pageState,
+      queryParams: props.queryParams,
+      list: list.value
+  }))
+}
+
+onMounted(() => {
+  const savedState = localStorage.getItem('pageListState')
+  if (savedState) {
+    const state = JSON.parse(savedState)
+    list.value = state.list
+    Object.assign(pageState, state.pageState) 
+    if (state.targetId) {
+      scrollToTarget(state.targetId)
+    } else {
+      fetchData()
+    }
+    localStorage.removeItem('pageListState')
+  } else {
+    fetchData()
+  }
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+defineExpose({
+  refresh,
+  scrollToTarget,
+  pageState
 })
 </script>
 

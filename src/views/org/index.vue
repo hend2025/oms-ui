@@ -12,24 +12,24 @@
         placeholder="请输入搜索关键词"
         clearable
         class="search-input"
-        @input="handleSearch"
-        @clear="handleSearch"
-        @keyup.enter="handleSearch"
+        @input="refreshList"
+        @clear="refreshList"
+        @keyup.enter="refreshList"
       >
         <template #append>
           <el-button @click="handleReset">重置</el-button>
         </template>
       </el-input>
     </div>
- 
-    <PageList
-      :list="pageList"
-      :loading="pageState.loading"
-      :has-more="pageState.hasMore"
-      key-field="orgId"
-    >
-      <template #item="{ item }">
-        <div class="list-item" @click="handleEdit(item)">
+
+    <ScrollList 
+      ref="scrollListRef"
+      :load-fn="fetchData"
+      item-key="orgId"
+      @item-click="handleItemClick"
+   >
+    <template #item="{ item }">
+        <div class="list-item">
           <div class="item-header">
             <span class="item-name">{{ item.orgName }}</span>
             <span class="item-name">{{ item.orgCode }}</span>
@@ -45,79 +45,55 @@
           </div>
         </div>
       </template>
-    </PageList>
 
-  </div>
+  </ScrollList>
+
+</div> 
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'  
+import { ref, reactive,  onMounted } from 'vue' 
 import { useRouter, useRoute } from 'vue-router'
-import { Loading } from '@element-plus/icons-vue' 
-import { ElMessage } from 'element-plus'
 import { postRequest } from "../../utils/api"
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
-import PageList from '../../components/PageList.vue'
+import ScrollList from '../../components/ScrollList.vue'
 
 const router = useRouter()
 const route = useRoute()  
 
-const pageList = ref([])
+const scrollListRef = ref(null)
 const pageState = reactive({
-  loading: false,
-  pageNum: 1,
-  pageSize: 10,
-  total: 0,
-  hasMore: true,
   searchKey: '',
   from: route.query.from || ''
 })
 
-const fetchPageList = async () => {
-  if (pageState.loading || !pageState.hasMore) return
+const fetchData = async (pageNum) => {
   try {
-    pageState.loading = true
     let orgType = ""
     if (pageState.from === 'stoin') {
       orgType = "1,3"
     } else if (pageState.from === 'order') {
       orgType = "2,3"
     }
-    const params = {
-      pageNum: pageState.pageNum,
-      pageSize: pageState.pageSize,
-      searchKey: pageState.searchKey,
-      orgType: orgType
-    }
+    const params = { pageNum: pageNum, orgType, searchKey: pageState.searchKey }
     const resp = await postRequest('/version/ht/org/list', params)
-    if (resp?.data?.code === 0 && resp.data.data) {
-      const { records = [], total = 0 } = resp.data.data
-      pageState.total = total
-      pageState.pageNum === 1 ? pageList.value = records : pageList.value.push(...records)
-      pageState.hasMore = pageList.value.length < total
-      if (pageState.hasMore) pageState.pageNum++
-    } else {
-      ElMessage.error(resp?.data?.message || '获取数据失败')
-    }
+    const { records = [], total = 0 } = resp.data.data
+    return { data:records, total:total }
   } catch (error) {
-    console.error('获取列表失败:', error)
-    ElMessage.error('获取数据失败')
-    pageState.hasMore = false
-  } finally {
-    pageState.loading = false
+    console.error('加载失败', error)
+    return { data: [], total: 0 }
   }
 }
 
-const handleSearch = () => {
-  pageState.pageNum = 1
-  pageState.hasMore = true
-  pageList.value = []
-  fetchPageList()
+const refreshList = () => {
+  scrollListRef.value?.reload()
 }
 
-const handleAdd = () => router.push('/org/form')
+const handleReset = () => {
+  pageState.searchKey = ''
+  refreshList()
+}
 
-const handleEdit = (item) => {
+const handleItemClick = (item) => { 
   if (route.query.select === 'true') {
     localStorage.setItem('selectedOrg', JSON.stringify({
       orgId: item.orgId,
@@ -126,43 +102,12 @@ const handleEdit = (item) => {
     }))
     router.back()
   } else {
-    localStorage.setItem('pageListState', JSON.stringify({
-      targetId: item.orgId,
-      pageState: pageState,
-      pageList: pageList.value
-    }))
     router.push(`/org/form?id=${item.orgId}`)
-  }
+  } 
 }
 
-const handleReset = () => {
-  pageState.searchKey = ''
-  handleSearch()
-}
+const handleAdd = () => router.push('/org/form')
 
-const { scrollToTarget } = useInfiniteScroll({
-  loading: pageState.loading,
-  hasMore: pageState.hasMore,
-  fetchData: fetchPageList
-})
-
-onMounted(async () => {
-  const savedState = localStorage.getItem('pageListState')
-  if (savedState) {
-    const state = JSON.parse(savedState)
-    pageList.value = state.pageList
-    Object.assign(pageState, state.pageState) 
-    if (state.targetId) {
-      await scrollToTarget(state.targetId)
-    } else {
-      await fetchPageList()
-    }
-    localStorage.removeItem('pageListState')
-  } else {
-    await fetchPageList()
-  }
-})
- 
 </script>
 
 <style scoped>

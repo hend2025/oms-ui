@@ -102,6 +102,7 @@ const handleSubmit = async () => {
       const resp = await postRequest(url, formData)
       if (resp?.data?.code === 0) {
         ElMessage.success('保存成功')
+        localStorage.setItem("formEditSave", JSON.stringify(formData))
         router.back()
       } else {
         ElMessage.error(resp?.data?.message || '保存失败')
